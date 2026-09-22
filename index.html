@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -44,8 +45,8 @@
 
   /* ---------- 1画面レイアウト ---------- */
   .app{
-    /* 埋め込み枠が高すぎても、操作ボタンが画面外に出ないよう上部に収める */
-    height:100%;max-height:560px;max-width:470px;margin:0 auto;
+    /* 単体で開いたときは画面いっぱい、サイト埋め込み時だけ上部560pxに収める */
+    height:100%;max-height:900px;max-width:470px;margin:0 auto;
     padding:8px 16px 14px;display:flex;flex-direction:column;gap:7px;
     overflow:hidden;
   }
@@ -329,6 +330,8 @@
     .scoreline .ln,.scoreline .bs{display:none}
     .pad button{padding:9px 0}
   }
+
+  html.embedded .app{max-height:560px}
 
   @media (prefers-reduced-motion: reduce){
     .bar i{transition:none}
@@ -1906,6 +1909,10 @@
   });
 
   /* ---------- 起動 ---------- */
+  try{
+    if(window.self !== window.top) document.documentElement.classList.add('embedded');
+  }catch(e){ document.documentElement.classList.add('embedded'); }
+
   function boot(data){
     best = (data && typeof data.best === 'number') ? data.best : loadBest();
     loadCleared();
