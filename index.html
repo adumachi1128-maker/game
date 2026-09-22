@@ -431,7 +431,7 @@
         <li><span class="no">7</span><span><b>耐久ブロック</b>（灰色・白いバー付き）は1回の爆発では壊れません。バーの本数が残り回数です。</span></li>
         <li><span class="no">8</span><span>ピースは<b>1〜5マス</b>の全29種。爆弾の数は<b>0個50%／1個40%／2個10%</b>。1マスのピースだけは必ず爆弾です。</span></li>
         <li><span class="no">9</span><span>一定時間ごとに<b>床が1段せり上がり</b>ます（通常15秒／EX10秒、進むほど短縮、下限7秒）。「迫上」バーが赤く点滅したら直前。</span></li>
-        <li><span class="no">10</span><span><b>3連鎖以上でFEVER突入</b>（12秒）。せり上がりが止まり、<b>得点2倍</b>、ピースに必ず爆弾が1個以上乗ります。</span></li>
+        <li><span class="no">10</span><span><b>3連鎖以上でFEVER突入</b>（12秒）。<b>落ちてくるピースが全マス爆弾</b>になり、<b>得点2倍</b>。せり上がりは止まらないので、一気に畳みかける時間です。</span></li>
         <li><span class="no">11</span><span>クリア時に<b>タイムでランク判定</b>（S／A／B／C）。ステージ選択に自己ベストのランクが残ります。</span></li>
       </ul>
       <h4>操作</h4>
@@ -713,8 +713,8 @@
     const flat = cells.flat().filter(Boolean);
     if(!def.allBomb){
       // 決めた個数ぶんだけ、ランダムなマスを爆弾にする
-      // FEVER中は必ず1個以上の爆弾が乗る
-      let n = Math.min(Math.max(rollBombCount(), feverMs > 0 ? 1 : 0), flat.length);
+      // FEVER中はピースの全マスが爆弾になる
+      let n = feverMs > 0 ? flat.length : Math.min(rollBombCount(), flat.length);
       const pool = flat.slice();
       while(n-- > 0){
         const i = Math.floor(Math.random()*pool.length);
@@ -1643,20 +1643,13 @@
     return Math.floor(s/60) + ':' + String(s%60).padStart(2,'0');
   }
   function updateRiseBar(){
-    if(feverMs > 0){
-      el.rise.style.width = (feverMs/FEVER_MS*100).toFixed(1)+'%';
-      el.riseBar.classList.add('fever');
-      el.riseBar.classList.remove('hot');
-      el.riseLabel.textContent = '熱狂';
-      el.riseLabel.classList.add('fever');
-      return;
-    }
-    el.riseBar.classList.remove('fever');
-    el.riseLabel.textContent = '迫上';
-    el.riseLabel.classList.remove('fever');
+    const fever = feverMs > 0;
+    el.riseBar.classList.toggle('fever', fever);
+    el.riseLabel.classList.toggle('fever', fever);
+    el.riseLabel.textContent = fever ? '熱狂' : '迫上';
     const k = Math.max(0, Math.min(1, riseAcc / riseInterval()));
     el.rise.style.width = (k*100).toFixed(1)+'%';
-    el.riseBar.classList.toggle('hot', k > 0.8);
+    el.riseBar.classList.toggle('hot', !fever && k > 0.8);
   }
   function startFever(){
     const fresh = feverMs <= 0;
@@ -1851,12 +1844,10 @@
           piece.y++;
         }
       }
-      if(feverMs <= 0){                 // FEVER中はせり上がりが止まる
-        riseAcc += dt;
-        if(riseAcc >= riseInterval()){
-          riseAcc = 0;
-          riseRow();
-        }
+      riseAcc += dt;
+      if(riseAcc >= riseInterval()){
+        riseAcc = 0;
+        riseRow();
       }
       updateRiseBar();
       el.tm.textContent = fmtTime(playMs);
