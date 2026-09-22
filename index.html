@@ -302,6 +302,21 @@
     padding:11px 2px 9px;border-radius:6px;cursor:pointer;text-align:center;position:relative;
     color:#bccbdf;background:#0a1220;border:1px solid #2b3e5a;
   }
+  .stages button.done{
+    border-color:#2f7d55;background:linear-gradient(180deg,#10261b,#0a1711);color:#c9f4dd;
+  }
+  .stages button.done::before{
+    content:"✓";position:absolute;left:5px;top:1px;font-size:11px;color:#4fd48a;
+    text-shadow:0 0 8px rgba(79,212,138,.8);
+  }
+  .stages button[aria-current="true"].done::before{color:#0b1018;text-shadow:none}
+  .groups button{position:relative}
+  .groups button .gc{
+    position:absolute;top:0;right:3px;font-size:8px;font-style:normal;color:#4fd48a;line-height:1.4;
+  }
+  .groups button.some{border-color:#2f7d55}
+  .groups button.done{border-color:#4fd48a;color:#c9f4dd;background:#0d2018}
+  .hud .ck{color:#4fd48a;font-size:12px;margin-left:3px;text-shadow:0 0 8px rgba(79,212,138,.7)}
   .stages button .rk{position:absolute;top:2px;right:5px;font-size:10px;text-shadow:0 0 8px currentColor}
   .stages button.ex{border-color:#8f3a2c;color:#ffb9a6;background:#160c0a}
   .stages button[aria-current="true"]{
@@ -464,7 +479,7 @@
       <button class="close" id="closeStages" type="button">閉じる</button>
     </header>
     <div class="body">
-      <p><b>AA〜ZZ の全676ステージ</b>。左の文字と右の文字が、そのままブロックの形になります。まず左の文字を選び、次に右の文字を選んでください。赤枠はEX（高難度）、右肩は自己ベストのランクです。</p>
+      <p><b>AA〜ZZ の全676ステージ</b>。左の文字と右の文字が、そのままブロックの形になります。まず左の文字を選び、次に右の文字を選んでください。<b>緑枠と✓がクリア済み</b>、右肩は自己ベストのランク。左の文字の右上の数字は、そのグループで何面クリアしたかです。赤枠はEX（高難度）。</p>
       <h4>左の文字</h4>
       <div class="groups" id="groupList"></div>
       <h4 id="groupTitle">AA 〜 AZ</h4>
@@ -1293,18 +1308,19 @@
     // 衝撃波
     shocks.forEach(s=>{
       const k = s.age/s.life, a = Math.max(0, 1-k);
+      const rr = Math.max(0.5, s.r);
       ctx.lineWidth = (s.deka ? 5 : 3) * a + 1;
       ctx.strokeStyle = 'rgba(255,'+Math.round(200*a+40)+',120,'+(0.75*a)+')';
-      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(s.x, s.y, rr, 0, Math.PI*2); ctx.stroke();
       ctx.strokeStyle = 'rgba(255,255,255,'+(0.5*a*a)+')';
       ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.arc(s.x, s.y, s.r*0.78, 0, Math.PI*2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(s.x, s.y, rr*0.78, 0, Math.PI*2); ctx.stroke();
       if(k < .35){
-        const g3 = ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,s.r*0.9);
+        const g3 = ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,rr*0.9);
         g3.addColorStop(0,'rgba(255,255,240,'+(0.55*(1-k/.35))+')');
         g3.addColorStop(1,'rgba(255,140,40,0)');
         ctx.fillStyle = g3;
-        ctx.beginPath(); ctx.arc(s.x,s.y,s.r*0.9,0,Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(s.x,s.y,rr*0.9,0,Math.PI*2); ctx.fill();
       }
     });
     ctx.globalCompositeOperation = 'source-over';
@@ -1449,6 +1465,7 @@
     }
     const rank = rankFor(playMs, startBlocks);
     saveRank(stageIndex, rank);
+    renderStageList();
     const before = clearedCount();
     const firstTime = markCleared(stageIndex);
     const after = clearedCount();
@@ -1518,7 +1535,8 @@
   }
   function updateHud(){
     const rest = grid ? countBlocks() : 0;
-    el.lv.textContent = stageLabel(stageIndex);
+    const isCleared = clearedMap && clearedMap[stageIndex] === '1';
+    el.lv.innerHTML = stageLabel(stageIndex) + (isCleared ? '<span class="ck">✓</span>' : '');
     el.ln.textContent = rest;
     el.sc.textContent = score;
     el.li.textContent = lines;
@@ -1670,7 +1688,7 @@
       b.type = 'button';
       b.id = 'stage'+(i+1);
       b.textContent = stageLabel(i);
-      if(STAGES[i].ex) b.className = 'ex';
+      b.className = (STAGES[i].ex ? 'ex' : '') + (clearedMap[i] === '1' ? ' done' : '');
       b.addEventListener('click', (e)=>{
         e.currentTarget.blur(); autoPaused = false; el.stageModal.hidden = true; startStage(i, false);
       });
@@ -1681,8 +1699,16 @@
     renderStageBadges();
   }
   function markStageButtons(){
-    el.groupList.querySelectorAll('button')
-      .forEach((b,g)=> b.setAttribute('aria-current', String(g === stageGroup)));
+    el.groupList.querySelectorAll('button').forEach((b,g)=>{
+      b.setAttribute('aria-current', String(g === stageGroup));
+      let n = 0;
+      for(let h=0; h<PER_GROUP; h++) if(clearedMap[g*PER_GROUP + h] === '1') n++;
+      let c = b.querySelector('.gc');
+      if(!c){ c = document.createElement('i'); c.className = 'gc'; b.appendChild(c); }
+      c.textContent = n ? String(n) : '';
+      b.classList.toggle('done', n === PER_GROUP);
+      b.classList.toggle('some', n > 0 && n < PER_GROUP);
+    });
     el.stageList.querySelectorAll('button')
       .forEach((b,h)=> b.setAttribute('aria-current', String(stageGroup*PER_GROUP + h === stageIndex)));
   }
