@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -11,11 +10,16 @@
 <meta property="og:description" content="爆弾を組んで、連鎖で吹き飛ばす落ち物パズル。全676ステージ。">
 <meta property="og:type" content="website">
 <style>
-  html{color-scheme:dark;height:100%}
+  html{color-scheme:dark;height:100%;touch-action:manipulation}
   :root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
   body{margin:0;height:100%;overflow:hidden}
   img{max-width:100%}
   [hidden]{display:none!important}
+  /* スマホで文字に触れても選択・コピーのメニューが出ないようにする */
+  body,body *{
+    -webkit-user-select:none;user-select:none;
+    -webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;
+  }
 </style>
 <title>ボンブリス</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -45,8 +49,8 @@
 
   /* ---------- 1画面レイアウト ---------- */
   .app{
-    /* 単体で開いたときは画面いっぱい、サイト埋め込み時だけ上部560pxに収める */
-    height:100%;max-height:900px;max-width:470px;margin:0 auto;
+    /* 埋め込み枠が高すぎても、操作ボタンが画面外に出ないよう上部に収める */
+    height:100vh;height:100dvh;max-width:470px;margin:0 auto;
     padding:8px 16px 14px;display:flex;flex-direction:column;gap:7px;
     overflow:hidden;
   }
@@ -61,7 +65,7 @@
   .tbtn{
     font-family:"DotGothic16",monospace;font-size:12px;letter-spacing:.06em;
     padding:7px 11px;border-radius:6px;cursor:pointer;white-space:nowrap;
-    color:#cfe0f5;background:linear-gradient(180deg,#1b2troops,#0d1622);
+    color:#cfe0f5;
     background:linear-gradient(180deg,#1c2941,#0d1622);
     border:1px solid #33496b;box-shadow:0 2px 0 #060a12;
   }
@@ -130,7 +134,7 @@
     border:2px solid #05080d;background:#04070d;
     box-shadow:inset 0 0 40px rgba(0,0,0,.9),0 0 24px rgba(53,214,255,.12);
   }
-  #cv{display:block}
+  #cv{display:block;touch-action:none}
   .crt{
     position:absolute;inset:0;pointer-events:none;
     background:
@@ -302,6 +306,13 @@
     padding:11px 2px 9px;border-radius:6px;cursor:pointer;text-align:center;position:relative;
     color:#bccbdf;background:#0a1220;border:1px solid #2b3e5a;
   }
+  .stages button .rk{position:absolute;top:2px;right:5px;font-size:10px;text-shadow:0 0 8px currentColor}
+  .stages button.ex{border-color:#8f3a2c;color:#ffb9a6;background:#160c0a}
+  .stages button[aria-current="true"]{
+    border-color:var(--gold);color:#120b02;
+    background:linear-gradient(180deg,#ffe49a,#f5a623);box-shadow:0 0 14px rgba(245,166,35,.35);
+  }
+  .stages button:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
   .stages button.done{
     border-color:#2f7d55;background:linear-gradient(180deg,#10261b,#0a1711);color:#c9f4dd;
   }
@@ -317,13 +328,11 @@
   .groups button.some{border-color:#2f7d55}
   .groups button.done{border-color:#4fd48a;color:#c9f4dd;background:#0d2018}
   .hud .ck{color:#4fd48a;font-size:12px;margin-left:3px;text-shadow:0 0 8px rgba(79,212,138,.7)}
-  .stages button .rk{position:absolute;top:2px;right:5px;font-size:10px;text-shadow:0 0 8px currentColor}
-  .stages button.ex{border-color:#8f3a2c;color:#ffb9a6;background:#160c0a}
-  .stages button[aria-current="true"]{
-    border-color:var(--gold);color:#120b02;
-    background:linear-gradient(180deg,#ffe49a,#f5a623);box-shadow:0 0 14px rgba(245,166,35,.35);
+  /* 未解放のステージ／文字 */
+  .stages button.lock,.groups button.lock{
+    opacity:.32;cursor:not-allowed;color:#6f8099;background:#070c15;border-color:#1a2638;
   }
-  .stages button:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+  .stages button.lock::after{content:"🔒";position:absolute;top:1px;right:3px;font-size:9px}
   .note{font-size:11px;color:#5d6d84;line-height:1.8;margin-top:14px}
 
   /* 画面が低いとき（サイト埋め込みなど）は自動で詰める */
@@ -345,8 +354,6 @@
     .scoreline .ln,.scoreline .bs{display:none}
     .pad button{padding:9px 0}
   }
-
-  html.embedded .app{max-height:560px}
 
   @media (prefers-reduced-motion: reduce){
     .bar i{transition:none}
@@ -390,7 +397,7 @@
         <div class="overlay" id="ov">
           <h2 id="ovTitle">MISSION</h2>
           <p id="ovText">積まれたブロックを全て消せばクリア。<br>爆弾入りのラインを揃えて爆破します。</p>
-          <button class="btn" id="startBtn">ステージA 開始</button>
+          <button class="btn" id="startBtn">ステージAA 開始</button>
         </div>
       </div>
     </div>
@@ -419,7 +426,7 @@
     </header>
     <div class="body">
       <h4>ミッション</h4>
-      <p><b>最初から積まれているブロックを全て消す</b>とステージクリア。<b>AA〜ZZ の全676ステージ</b>。ステージ名の2文字が、そのまま初期配置の形になります（左の文字＋右の文字）。左の文字が<b>N以降はEX（高難度）</b>。天井まで積み上がるとミス（同じステージをやり直し）。</p>
+      <p><b>最初から積まれているブロックを全て消す</b>とステージクリア。<b>AA〜ZZ の全676ステージ</b>。ステージ名の2文字が、そのまま初期配置の形になります（左の文字＋右の文字）。<b>前のステージをクリアすると次のステージが解放</b>されます。左の文字が<b>N以降はEX（高難度）</b>。天井まで積み上がるとミス（同じステージをやり直し）。</p>
       <h4>基本ルール</h4>
       <ul class="rules">
         <li><span class="no">1</span><span>横一列が揃うと<b>その列は消えます</b>。爆弾が含まれていれば、続けて<b>爆発</b>が起きて周囲も吹き飛びます。</span></li>
@@ -431,7 +438,7 @@
         <li><span class="no">7</span><span><b>耐久ブロック</b>（灰色・白いバー付き）は1回の爆発では壊れません。バーの本数が残り回数です。</span></li>
         <li><span class="no">8</span><span>ピースは<b>1〜5マス</b>の全29種。爆弾の数は<b>0個50%／1個40%／2個10%</b>。1マスのピースだけは必ず爆弾です。</span></li>
         <li><span class="no">9</span><span>一定時間ごとに<b>床が1段せり上がり</b>ます（通常15秒／EX10秒、進むほど短縮、下限7秒）。「迫上」バーが赤く点滅したら直前。</span></li>
-        <li><span class="no">10</span><span><b>3連鎖以上でFEVER突入</b>（12秒）。<b>落ちてくるピースが全マス爆弾</b>になり、<b>得点2倍</b>。せり上がりは止まらないので、一気に畳みかける時間です。</span></li>
+        <li><span class="no">10</span><span><b>3連鎖以上でFEVER突入</b>（12秒）。せり上がりが止まり、<b>得点2倍</b>、ピースが<b>すべて爆弾</b>になります。</span></li>
         <li><span class="no">11</span><span>クリア時に<b>タイムでランク判定</b>（S／A／B／C）。ステージ選択に自己ベストのランクが残ります。</span></li>
       </ul>
       <h4>操作</h4>
@@ -467,7 +474,7 @@
       <div class="ranks" id="awRanks"></div>
       <h4>勲章</h4>
       <div class="medals" id="awMedals"></div>
-      <p class="note">記録はこの端末のブラウザに保存されます。別の端末とは共有されません。</p>
+      <p class="note">記録（クリア状況・ランク・ベストスコア・続きのステージ）は、この端末のブラウザに自動保存されます。別の端末とは共有されません。</p>
     </div>
   </div>
 </div>
@@ -479,7 +486,7 @@
       <button class="close" id="closeStages" type="button">閉じる</button>
     </header>
     <div class="body">
-      <p><b>AA〜ZZ の全676ステージ</b>。左の文字と右の文字が、そのままブロックの形になります。まず左の文字を選び、次に右の文字を選んでください。<b>緑枠と✓がクリア済み</b>、右肩は自己ベストのランク。左の文字の右上の数字は、そのグループで何面クリアしたかです。赤枠はEX（高難度）。</p>
+      <p><b>AA〜ZZ の全676ステージ</b>。左の文字と右の文字が、そのままブロックの形になります。<b>前のステージをクリアすると次が解放</b>されます（🔒は未解放）。赤枠はEX（高難度）、右肩は自己ベストのランクです。</p>
       <h4>左の文字</h4>
       <div class="groups" id="groupList"></div>
       <h4 id="groupTitle">AA 〜 AZ</h4>
@@ -518,6 +525,10 @@
   };
   const reduceMotion = window.matchMedia &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // スマホの長押しメニュー（コピー・画像保存など）を出さない
+  document.addEventListener('contextmenu', (e)=> e.preventDefault());
+  document.addEventListener('selectstart', (e)=> e.preventDefault());
 
   const GEMS = ['#2f9bf0','#3fc7c7','#7d6ff0','#38b86a','#e8c545','#ef7d3a','#d9558f',
                 '#5ad1a0','#a97cf0','#f0a03a'];
@@ -670,6 +681,12 @@
   function emptyGrid(){ return Array.from({length:ROWS}, ()=>Array(COLS).fill(null)); }
   function loadBest(){ try{ return parseInt(localStorage.getItem('bombliss-best')||'0',10)||0; }catch(e){ return 0; } }
   function saveBest(v){ try{ localStorage.setItem('bombliss-best', String(v)); }catch(e){} }
+  // 続きから遊べるよう、次に遊ぶステージ番号を保存
+  function loadLast(){
+    try{ const v = parseInt(localStorage.getItem('bombliss-last') || '', 10); return isNaN(v) ? -1 : v; }
+    catch(e){ return -1; }
+  }
+  function saveLast(i){ try{ localStorage.setItem('bombliss-last', String(i)); }catch(e){} }
   function clearTimers(){ timers.forEach(clearTimeout); timers = []; }
   function later(fn, ms){ timers.push(setTimeout(fn, ms)); }
 
@@ -706,15 +723,16 @@
   function makePiece(){
     if(!bag.length) refillBag();
     const def = PIECES[bag.pop()];
+    const allBomb = def.allBomb || feverMs > 0;   // FEVER中は全マス爆弾
     const cells = def.s.map(row => row.map(v => {
       if(!v) return null;
-      return { k: def.k, b: !!def.allBomb };
+      return { k: def.k, b: allBomb };
     }));
     const flat = cells.flat().filter(Boolean);
-    if(!def.allBomb){
+    if(!allBomb){
       // 決めた個数ぶんだけ、ランダムなマスを爆弾にする
-      // FEVER中はピースの全マスが爆弾になる
-      let n = feverMs > 0 ? flat.length : Math.min(rollBombCount(), flat.length);
+      // FEVER中は必ず1個以上の爆弾が乗る
+      let n = Math.min(Math.max(rollBombCount(), feverMs > 0 ? 1 : 0), flat.length);
       const pool = flat.slice();
       while(n-- > 0){
         const i = Math.floor(Math.random()*pool.length);
@@ -1308,9 +1326,9 @@
     // 衝撃波
     shocks.forEach(s=>{
       const k = s.age/s.life, a = Math.max(0, 1-k);
-      const rr = Math.max(0.5, s.r);
       ctx.lineWidth = (s.deka ? 5 : 3) * a + 1;
       ctx.strokeStyle = 'rgba(255,'+Math.round(200*a+40)+',120,'+(0.75*a)+')';
+      const rr = Math.max(0.5, s.r);
       ctx.beginPath(); ctx.arc(s.x, s.y, rr, 0, Math.PI*2); ctx.stroke();
       ctx.strokeStyle = 'rgba(255,255,255,'+(0.5*a*a)+')';
       ctx.lineWidth = 1.5;
@@ -1465,13 +1483,14 @@
     }
     const rank = rankFor(playMs, startBlocks);
     saveRank(stageIndex, rank);
-    renderStageList();
     const before = clearedCount();
     const firstTime = markCleared(stageIndex);
     const after = clearedCount();
     const titleUp = titleFor(before) !== titleFor(after);
     const medal = MEDALS.find(m=>m[0] === after);
     const last = stageIndex >= STAGES.length - 1;
+    saveLast(last ? 0 : stageIndex + 1);          // 次回はこの続きから
+    renderStageList();
     const word = last ? 'ALL CLEAR!' : 'CLEAR!';
     el.ovTitle.className = 'clearlogo';
     el.ovTitle.innerHTML = word.split('').map((ch,i)=>
@@ -1502,7 +1521,10 @@
   }
   function startStage(i, keepScore){
     clearTimers();
-    stageIndex = Math.max(0, Math.min(STAGES.length-1, i));
+    i = Math.max(0, Math.min(STAGES.length-1, i));
+    if(!isUnlocked(i)) i = firstUncleared();       // 未解放のステージは遊べない
+    stageIndex = i;
+    saveLast(stageIndex);
     if(!keepScore){ score = 0; lines = 0; }
     level = Math.min(15, 1 + stageIndex);
     flash = []; chainLabel = null; piece = null;
@@ -1581,6 +1603,15 @@
     try{ localStorage.setItem('bombliss-cleared', clearedMap); }catch(e){}
     return true;
   }
+  // 解放判定：最初のステージ、クリア済み、または1つ前をクリア済みなら遊べる
+  function isUnlocked(i){
+    return i === 0 || clearedMap[i] === '1' || clearedMap[i-1] === '1';
+  }
+  // まだクリアしていない最初のステージ（全部クリア済みなら AA）
+  function firstUncleared(){
+    const i = clearedMap.indexOf('0');
+    return i < 0 ? 0 : i;
+  }
 
   const RANKS = ['C','B','A','S'];
   const RANK_COLOR = { S:'#ffd166', A:'#4fd48a', B:'#35d6ff', C:'#9fb0c6' };
@@ -1598,16 +1629,6 @@
     const cur = loadRank(i);
     if(cur && RANKS.indexOf(cur) >= RANKS.indexOf(rank)) return;
     try{ localStorage.setItem('bombliss-rank-'+i, rank); }catch(e){}
-  }
-  function renderStageBadges(){
-    el.stageList.querySelectorAll('button').forEach((b,i)=>{
-      let badge = b.querySelector('.rk');
-      const r = loadRank(i);
-      if(!r){ if(badge) badge.remove(); return; }
-      if(!badge){ badge = document.createElement('span'); badge.className = 'rk'; b.appendChild(badge); }
-      badge.textContent = r;
-      badge.style.color = RANK_COLOR[r];
-    });
   }
 
   function renderAward(){
@@ -1643,13 +1664,20 @@
     return Math.floor(s/60) + ':' + String(s%60).padStart(2,'0');
   }
   function updateRiseBar(){
-    const fever = feverMs > 0;
-    el.riseBar.classList.toggle('fever', fever);
-    el.riseLabel.classList.toggle('fever', fever);
-    el.riseLabel.textContent = fever ? '熱狂' : '迫上';
+    if(feverMs > 0){
+      el.rise.style.width = (feverMs/FEVER_MS*100).toFixed(1)+'%';
+      el.riseBar.classList.add('fever');
+      el.riseBar.classList.remove('hot');
+      el.riseLabel.textContent = '熱狂';
+      el.riseLabel.classList.add('fever');
+      return;
+    }
+    el.riseBar.classList.remove('fever');
+    el.riseLabel.textContent = '迫上';
+    el.riseLabel.classList.remove('fever');
     const k = Math.max(0, Math.min(1, riseAcc / riseInterval()));
     el.rise.style.width = (k*100).toFixed(1)+'%';
-    el.riseBar.classList.toggle('hot', !fever && k > 0.8);
+    el.riseBar.classList.toggle('hot', k > 0.8);
   }
   function startFever(){
     const fresh = feverMs <= 0;
@@ -1669,7 +1697,11 @@
       const b = document.createElement('button');
       b.type = 'button';
       b.textContent = LETTERS[g];
-      b.addEventListener('click', (e)=>{ e.currentTarget.blur(); stageGroup = g; renderStageList(); });
+      b.addEventListener('click', (e)=>{
+        e.currentTarget.blur();
+        if(!isUnlocked(g*PER_GROUP)) return;
+        stageGroup = g; renderStageList();
+      });
       el.groupList.appendChild(b);
     }
   }
@@ -1681,9 +1713,14 @@
       b.type = 'button';
       b.id = 'stage'+(i+1);
       b.textContent = stageLabel(i);
-      b.className = (STAGES[i].ex ? 'ex' : '') + (clearedMap[i] === '1' ? ' done' : '');
+      const open = isUnlocked(i);
+      if(STAGES[i].ex) b.classList.add('ex');
+      if(clearedMap[i] === '1') b.classList.add('done');
+      if(!open){ b.classList.add('lock'); b.disabled = true; b.setAttribute('aria-label', stageLabel(i)+'（未解放）'); }
       b.addEventListener('click', (e)=>{
-        e.currentTarget.blur(); autoPaused = false; el.stageModal.hidden = true; startStage(i, false);
+        e.currentTarget.blur();
+        if(!isUnlocked(i)) return;
+        autoPaused = false; el.stageModal.hidden = true; startStage(i, false);
       });
       el.stageList.appendChild(b);
     }
@@ -1694,6 +1731,9 @@
   function markStageButtons(){
     el.groupList.querySelectorAll('button').forEach((b,g)=>{
       b.setAttribute('aria-current', String(g === stageGroup));
+      const open = isUnlocked(g*PER_GROUP);
+      b.classList.toggle('lock', !open);
+      b.disabled = !open;
       let n = 0;
       for(let h=0; h<PER_GROUP; h++) if(clearedMap[g*PER_GROUP + h] === '1') n++;
       let c = b.querySelector('.gc');
@@ -1844,10 +1884,12 @@
           piece.y++;
         }
       }
-      riseAcc += dt;
-      if(riseAcc >= riseInterval()){
-        riseAcc = 0;
-        riseRow();
+      if(feverMs <= 0){                 // FEVER中はせり上がりが止まる
+        riseAcc += dt;
+        if(riseAcc >= riseInterval()){
+          riseAcc = 0;
+          riseRow();
+        }
       }
       updateRiseBar();
       el.tm.textContent = fmtTime(playMs);
@@ -1863,7 +1905,8 @@
     if(state === 'paused'){ togglePause(); return; }
     if(pendingAction === 'next') startStage(stageIndex + 1, true);
     else if(pendingAction === 'retry') startStage(stageIndex, false);
-    else startStage(0, false);
+    else if(pendingAction === 'first') startStage(0, false);
+    else startStage(stageIndex, false);            // 起動直後：続きのステージから
   }
   document.addEventListener('keydown', (e)=>{
     const gameKey = ['ArrowLeft','ArrowRight','ArrowDown','ArrowUp',' ','Spacebar','x','X','z','Z','p','P'].includes(e.key);
@@ -1926,20 +1969,24 @@
   });
 
   /* ---------- 起動 ---------- */
-  try{
-    if(window.self !== window.top) document.documentElement.classList.add('embedded');
-  }catch(e){ document.documentElement.classList.add('embedded'); }
-
   function boot(data){
     best = (data && typeof data.best === 'number') ? data.best : loadBest();
     loadCleared();
+    // 保存データがブラウザに勝手に消されにくくなるよう依頼（対応ブラウザのみ）
+    try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(e){}
     buildGroupList();
-    stageGroup = 0;
-    renderStageList();
-    stageIndex = 0; pendingAction = 'start';
+    // 前回の続き（無ければ未クリアの最初のステージ）から
+    const lastSaved = loadLast();
+    stageIndex = (lastSaved >= 0 && lastSaved < STAGE_COUNT && isUnlocked(lastSaved)) ? lastSaved : firstUncleared();
+    pendingAction = 'start';
     loadStage(stageIndex);
     stageGroup = Math.floor(stageIndex / PER_GROUP);
     renderStageList();
+    if(clearedCount() > 0){
+      el.ovTitle.textContent = 'CONTINUE';
+      el.ovText.innerHTML = '前回の続きから遊べます。<br>クリア済み <b style="color:#35d6ff">'+clearedCount()+'</b> / '+STAGE_COUNT+' ステージ';
+    }
+    el.start.textContent = 'ステージ'+stageLabel(stageIndex)+' 開始';
     next = makePiece();
     updateHud();
     drawNext();
