@@ -111,6 +111,24 @@ button:focus-visible{outline:2px solid var(--led);outline-offset:2px}
 .how td,.how th{border-bottom:1px solid var(--line);padding:4px 6px;text-align:left}
 .how th{color:var(--muted);font-weight:400}
 .how kbd{font-family:var(--dot);background:var(--panel2);border:1px solid var(--line);border-radius:4px;padding:0 5px}
+.hbtns{display:flex;gap:6px}
+.tp{color:var(--cyan);font-family:var(--dot);font-size:13px;margin-left:4px}
+.badge.tp2{background:var(--cyan);color:#06222a}
+.train{display:flex;flex-direction:column;gap:10px;padding-bottom:16px}
+.tsum{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
+.tsum small{display:block;font-size:11px;color:var(--muted)}
+.tsum b{font-family:var(--dot);font-weight:400;font-size:26px;color:var(--led)}
+.tcard{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:grid;gap:7px}
+.thead{display:flex;justify-content:space-between;align-items:baseline}
+.thead b{font-family:var(--disp);font-weight:400;font-size:17px}
+.thead span{font-family:var(--dot);color:var(--led);font-size:15px}
+.tdesc{font-size:12px;color:var(--muted);line-height:1.5}
+.tbar{height:8px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden}
+.tbar i{display:block;height:100%;background:linear-gradient(90deg,var(--tartan),var(--led))}
+.tnow{display:flex;justify-content:space-between;font-size:12px;font-variant-numeric:tabular-nums}
+.tnow em{font-style:normal;color:var(--good)}
+.tup{border:1px solid #e0694d;border-radius:10px;padding:10px;font-weight:800;font-size:14px;background:linear-gradient(180deg,#d8563a,var(--tartan-deep));color:#fff}
+.tup[disabled]{opacity:.35;cursor:default;background:var(--panel2);border-color:var(--line)}
 @media (max-width:380px){ .logo b{font-size:44px} .cell .v{font-size:17px} .big{font-size:28px} }
 @media (prefers-reduced-motion:reduce){ *{transition:none!important} }
 </style>
@@ -122,9 +140,9 @@ button:focus-visible{outline:2px solid var(--led);outline-offset:2px}
   <div class="screen" id="scMenu">
     <div class="hero">
       <h1 class="logo"><b>100<i>m</i></b><span>SPRINT CIRCUIT</span></h1>
-      <button class="icon" id="toHow1">遊び方</button>
+      <div class="hbtns"><button class="icon" id="toTrain">育成<span class="tp" id="tpMenu"></span></button><button class="icon" id="toHow1">遊び方</button></div>
     </div>
-    <p class="lead">予選から勝ち上がり、決勝で3位以内に入ると次の大会へ。</p>
+    <p class="lead">予選から勝ち上がり、決勝で3位以内に入ると次の大会へ。走るとTPがたまるので、「育成」で強化しましょう。</p>
     <div class="cups scroll" id="cups"></div>
   </div>
 
@@ -164,6 +182,15 @@ button:focus-visible{outline:2px solid var(--led);outline-offset:2px}
     </div>
   </div>
 
+  <!-- 育成 -->
+  <div class="screen" id="scTrain" hidden>
+    <div class="bar"><button class="icon" id="trainBack">← 戻る</button><div class="ttl"><small>レースで獲得したTPで強化</small><b>育成</b></div><div class="tp" id="tTPbar" style="font-size:16px"></div></div>
+    <div class="train scroll">
+      <div class="tsum"><div><small>いまの理論タイム（ミスなし・無風）</small><b id="tIdeal">--.--</b><small id="tIdealSub"></small></div><div style="text-align:right"><small>所持TP</small><b id="tTP" style="color:var(--cyan)">0</b></div></div>
+      <div id="tList" style="display:flex;flex-direction:column;gap:10px"></div>
+    </div>
+  </div>
+
   <!-- 遊び方 -->
   <div class="screen" id="scHow" hidden>
     <div class="bar"><button class="icon" id="howBack">← 戻る</button><div class="ttl"><b>遊び方</b></div></div>
@@ -195,6 +222,13 @@ button:focus-visible{outline:2px solid var(--led);outline-offset:2px}
           <tr><td>決勝</td><td>3位以内で次の大会が解放</td></tr>
         </table>
         <p style="margin-top:6px">ラウンドが進むほど相手は強くなります。結果表の <b style="color:var(--good)">Q</b> は着順で通過した選手の印。落ちても同じ組から再挑戦できます。</p>
+      </section>
+      <section><h3>育成</h3>
+        <ul>
+          <li>レースの着順・PERFECT数・大会の格に応じて<b>TP</b>がもらえます（負けても貯まります）。</li>
+          <li>「育成」でTPを使い、<b>最高速</b>（速度の上限）・<b>加速</b>（ドンの後の伸び）・<b>持久力</b>（70m以降の失速）を強化。</li>
+          <li>各大会の横の<b>理論タイム</b>は、いまの能力でミスなく走ったときの目安。相手の記録（優勝ライン）に届かないうちは、タップが完璧でも勝てません。</li>
+        </ul>
       </section>
       <section><h3>記録</h3>
         <ul>
@@ -229,7 +263,7 @@ const CUPS=[
   {name:'オリンピック', sub:'五輪',           pool:POOL_W,  rounds:[R_HEAT,R_QF,R_SF,R_F],   v:[11.89,11.78,11.69,11.59,11.49,11.38,11.27]},
 ];
 const estTime = v => 100/v + 1.42;
-const VMAX_P=12.85, DIP_ZONE=96.5;
+const DIP_ZONE=96.5;
 const WIN={P:0.08,G:0.15,O:0.22}, GAIN={P:0.12,G:0.08,O:0.03,M:-0.03};
 const JT={P:'PERFECT',G:'GOOD',O:'OK',M:'MISS'}, JC={P:'#ffb547',G:'#6fd39a',O:'#5fd0e6',M:'#ff6b5b'};
 const period=v=>Math.max(0.50,Math.min(0.9,5.6/Math.max(v,3)));
@@ -237,20 +271,55 @@ const dipBonus=x=>x>=99.2?0.05:x>=98.3?0.035:0.015;
 const shuffle=a=>{ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
 
 // ---- 保存
-let SAVE={pb:{},pos:{}};
-try{ const s=JSON.parse(localStorage.getItem('s100-save3')||'null'); if(s&&s.pb) SAVE=s; }catch(e){}
+let SAVE={pb:{},pos:{},st:{spd:0,acc:0,sta:0},tp:0};
+try{ const s=JSON.parse(localStorage.getItem('s100-save3')||'null'); if(s&&s.pb){ SAVE=Object.assign(SAVE,s); SAVE.st=Object.assign({spd:0,acc:0,sta:0},s.st||{}); SAVE.tp=+s.tp||0; } }catch(e){}
+// ---- 育成
+const MAXLV=20;
+const vcapOf=st=>10.0+0.12*st.spd, accOf=st=>0.75+0.02*st.acc, fadeOf=st=>1-0.04*st.sta, costOf=lv=>8+2*lv;
+function idealTime(st){   // ミスなし・無風・反応0.15秒・DIPあり
+  let v=0,x=0,t=0.15; const dt=0.005,vc=vcapOf(st),ac=accOf(st),fd=fadeOf(st);
+  while(x<100){ let tg=vc; if(x>70) tg*=1-(x-70)*0.0015*fd;
+    if(v<tg) v=Math.min(tg,v+(2+7*(1-v/13))*dt*ac); else v=Math.max(tg,v-3*dt);
+    x+=v*dt; t+=dt; }
+  return t-0.035;
+}
+const STATS=[
+  {k:'spd',name:'最高速',desc:'走りの速度の上限が上がります。',now:st=>vcapOf(st).toFixed(2)+' m/s'},
+  {k:'acc',name:'加速',desc:'ドンのあと、トップスピードに乗るまでが速くなります。',now:st=>'加速 ×'+accOf(st).toFixed(2)},
+  {k:'sta',name:'持久力',desc:'70m以降の失速が小さくなります。',now:st=>'ゴール前の失速 '+(4.5*fadeOf(st)).toFixed(1)+'%'}
+];
+function renderTrain(){
+  const cur=idealTime(SAVE.st);
+  $('tIdeal').textContent=cur.toFixed(2); $('tTP').textContent=SAVE.tp; $('tTPbar').textContent=SAVE.tp+' TP';
+  $('tIdealSub').textContent='全Lv0 '+idealTime({spd:0,acc:0,sta:0}).toFixed(2)+' → 全Lv20 '+idealTime({spd:20,acc:20,sta:20}).toFixed(2);
+  $('tList').innerHTML=STATS.map(d=>{
+    const lv=SAVE.st[d.k], maxed=lv>=MAXLV, cost=costOf(lv);
+    const nx=Object.assign({},SAVE.st,{[d.k]:lv+1});
+    const gain=maxed?0:cur-idealTime(nx);
+    return `<div class="tcard"><div class="thead"><b>${d.name}</b><span>Lv ${lv} / ${MAXLV}</span></div>
+      <div class="tdesc">${d.desc}</div><div class="tbar"><i style="width:${lv/MAXLV*100}%"></i></div>
+      <div class="tnow"><span>${d.now(SAVE.st)}</span>${maxed?'<span>MAX</span>':`<span>次のLv → <em>理論タイム −${gain.toFixed(2)}秒</em></span>`}</div>
+      <button class="tup" data-k="${d.k}" ${maxed||SAVE.tp<cost?'disabled':''}>${maxed?'最大まで強化済み':`強化する（${cost} TP）`}</button></div>`;
+  }).join('');
+}
+$('tList').addEventListener('click',e=>{ const b=e.target.closest('.tup'); if(!b||b.disabled) return;
+  const k=b.dataset.k, lv=SAVE.st[k], c=costOf(lv); if(lv>=MAXLV||SAVE.tp<c) return;
+  SAVE.tp-=c; SAVE.st[k]=lv+1; persist(); beep(784,.08,.04,'triangle'); renderTrain(); });
+$('toTrain').onclick=()=>go('scTrain');
+$('trainBack').onclick=()=>go('scMenu');
 function persist(){ try{ localStorage.setItem('s100-save3',JSON.stringify(SAVE)); }catch(e){} }
 const unlocked=i=>i===0||(SAVE.pos[i-1]!=null&&SAVE.pos[i-1]<=3);
 
 // ---- 画面
 let howFrom='scMenu';
-function go(id){ ['scMenu','scRace','scHow'].forEach(s=>$(s).hidden=s!==id); if(id==='scRace') requestAnimationFrame(resize); if(id==='scMenu') renderMenu(); }
+function go(id){ ['scMenu','scRace','scHow','scTrain'].forEach(s=>$(s).hidden=s!==id); if(id==='scRace') requestAnimationFrame(resize); if(id==='scMenu') renderMenu(); if(id==='scTrain') renderTrain(); }
 function renderMenu(){
+  const ideal=idealTime(SAVE.st); $('tpMenu').textContent=SAVE.tp?' '+SAVE.tp:'';
   $('cups').innerHTML=CUPS.map((c,i)=>{
     const ok=unlocked(i), pos=SAVE.pos[i], best=SAVE.pb[i];
     const medal=pos&&pos<=3?`<span class="medal m${pos}"></span>`:'';
     const chips=c.rounds.map(r=>`<span class="chip${r===R_F?' fin':''}">${r.name}</span>`).join('');
-    const right=ok?`${medal}${best?best.toFixed(2):'--.--'}<small>優勝ライン ${estTime(Math.max(...c.v)).toFixed(1)}秒</small>`:`<small>前大会の決勝で<br>3位以内</small>`;
+    const right=ok?`${medal}${best?best.toFixed(2):'--.--'}<small>優勝ライン ${estTime(Math.max(...c.v)).toFixed(2)}秒<br>理論値 <span style="color:${ideal<estTime(Math.max(...c.v))?'var(--good)':'var(--bad)'}">${ideal.toFixed(2)}秒</span></small>`:`<small>前大会の決勝で<br>3位以内</small>`;
     return `<button class="cup${ok?' open':''}" data-i="${i}" ${ok?'':'disabled'}><span class="no">${i+1}</span><span><span class="nm">${c.name}</span><span class="chips">${chips}</span></span><span class="rt">${right}</span></button>`;
   }).join('');
 }
@@ -370,9 +439,9 @@ function update(dt){
   const me=S.runners[ME], active=me.rt!==null&&me.fin===null&&me.x<DIP_ZONE;
   if(active&&S.t>=S.nextBeat&&S.tickBeat!==S.beats){ S.tickBeat=S.beats; beep(S.beats%2?1200:1000,.035,.035,'sine'); }
   if(active&&S.t>S.nextBeat+WIN.O){ judge('M'); advanceBeat(); }
-  let target=me.rt===null?0:VMAX_P*S.power*(1+S.wind*0.004);
-  if(me.x>70) target*=1-(me.x-70)*0.0015;
-  if(me.fin===null){ if(me.v<target) me.v=Math.min(target,me.v+(2+7*(1-me.v/13))*dt); else me.v=Math.max(target,me.v-3*dt); }
+  let target=me.rt===null?0:vcapOf(SAVE.st)*S.power*(1+S.wind*0.004);
+  if(me.x>70) target*=1-(me.x-70)*0.0015*fadeOf(SAVE.st);
+  if(me.fin===null){ if(me.v<target) me.v=Math.min(target,me.v+(2+7*(1-me.v/13))*dt*accOf(SAVE.st)); else me.v=Math.max(target,me.v-3*dt); }
   else me.v=Math.max(1.5,me.v-4*dt);
   const old=me.x; me.x+=me.v*dt;
   if(active){ const f=Math.min(1,(S.t-S.prevBeat)/Math.max(0.01,S.nextBeat-S.prevBeat)); me.cyc=S.beats+f; }
@@ -410,6 +479,8 @@ function finish(){
   let newPb=false;
   if(me.fin!==null&&legal&&(SAVE.pb[RUN.cup]==null||me.fin<SAVE.pb[RUN.cup])){ SAVE.pb[RUN.cup]=me.fin; newPb=true; }
   if(isFinal&&me.fin!==null&&(SAVE.pos[RUN.cup]==null||pos<SAVE.pos[RUN.cup])) SAVE.pos[RUN.cup]=pos;
+  const kk=S.cnt, gainTP=Math.round(10+Math.max(0,9-pos)*2+kk.P*0.5+RUN.cup*3+(isFinal?10+(pos<=3?(4-pos)*5:0):0));
+  SAVE.tp+=gainTP;
   persist();
   const opened=wasLocked&&unlocked(RUN.cup+1);
   $('rCup').textContent=c.name+' / '+roundLabel();
@@ -418,7 +489,7 @@ function finish(){
   const st=$('rStatus');
   if(isFinal){ st.textContent=pos<=3?['金メダル','銀メダル','銅メダル'][pos-1]+'獲得！':'メダルに届かず'; st.className='status '+(pos<=3?'gold':'out'); }
   else { st.textContent=ok?`${nextName()}進出！`:'ここで敗退'; st.className='status '+(ok?'ok':'out'); }
-  $('rBadges').innerHTML=(newPb?'<span class="badge pb">自己ベスト</span>':'')+(legal?'':'<span class="badge ng">追い風参考</span>')+(opened?`<span class="badge un">${CUPS[RUN.cup+1].name} 解放</span>`:'');
+  $('rBadges').innerHTML=`<span class="badge tp2">+${gainTP} TP</span>`+(newPb?'<span class="badge pb">自己ベスト</span>':'')+(legal?'':'<span class="badge ng">追い風参考</span>')+(opened?`<span class="badge un">${CUPS[RUN.cup+1].name} 解放</span>`:'');
   $('rList').innerHTML=rk.map((x,i)=>{
     const q=!isFinal&&i<r.q&&x.fin!==null?'Q':'';
     const cut=(!isFinal&&i===r.q-1)||(isFinal&&i===2);
