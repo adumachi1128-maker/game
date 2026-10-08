@@ -159,6 +159,7 @@ const UPS=[
  {k:'b',name:'ドリンク持続',desc:'1段階ごとに +1秒',cost:[50,100,160,240,340]},
  {k:'m',name:'マグネット強化',desc:'効果時間と吸引範囲アップ',cost:[60,120,200,300,420]},
  {k:'z',name:'ゾーン充填',desc:'ゲージが25%ずつ速く溜まる',cost:[120,240,400]},
+ {k:'s',name:'スタミナ上限',desc:'1段階ごとに 最大体力 +10',cost:[80,160,260,380]},
  {k:'l',name:'初期ライフ',desc:'1段階ごとに +1',cost:[200,500]}];
 const SAVE={v:2,coins:0,up:{h:0,b:0,m:0,l:0,z:0},suits:[1,0,0,0,0],suit:0,stars:[]};
 try{const s=JSON.parse(localStorage.getItem('wc_save2')||'null');if(s){Object.assign(SAVE,s);SAVE.up=Object.assign({h:0,b:0,m:0,l:0,z:0},s.up||{});if(!Array.isArray(SAVE.stars)||SAVE.v!==2)SAVE.stars=[];SAVE.v=2;if(!Array.isArray(SAVE.suits))SAVE.suits=[1,0,0,0,0]}}catch(e){}
@@ -508,7 +509,7 @@ function build(){
   G.objs=[];G.poops=[];G.pops=[];G.blobs=[];G.parts=[];G.bird=null;
   G.birdT=G.th.bird?G.th.bird*0.8:1e9;
   G.helmet=0;G.boost=0;G.splat=0;G.combo=0;G.comboPop=0;G.lastPress=-9;G.stageT=0;G.flash=0;
-  G.coinsRun=0;G.hits=0;G.near=0;G.maxCombo=0;G.flow=0;G.zone=0;G.magnet=0;G.hs=0;G.slow=0;G.helmetMax=10;G.boostMax=6;G.magMax=10;G.clrM=[];G.clrStars=0;G.clrCoins=0;
+  G.coinsRun=0;G.hits=0;G.near=0;G.maxCombo=0;G.flow=0;G.zone=0;G.magnet=0;G.hs=0;G.slow=0;G.helmetMax=10;G.boostMax=4;G.stMax=100+10*UP('s');G.st=G.stMax;G.tired=0;G.magMax=10;G.clrM=[];G.clrStars=0;G.clrCoins=0;
   G.windS='idle';G.windT=rnd(4,7);G.windV=0;
   G.px=BX+BW/2;G.py=40;G.cam=40;G.maxY=40;G.slip=null;G.inv=0;
   G.lastHand=null;G.hL=-12;G.hR=-12;G.dirT=1.5;G.potT=2.5;G.legA=-1;
@@ -542,7 +543,7 @@ function nearMiss(o){
 }
 function giveMagnet(){G.magMax=10+2*UP('m');G.magnet=G.magMax;pop(G.px,G.py+50,'マグネット！','#d36bff');beep(760,0.12,'triangle',0.07);emit(G.px,G.py,12,{sp:90,life:.6,size:2.2,col:['#e8b8ff','#ffffff','#d36bff'],type:'glow'})}
 function giveHelmet(){G.helmetMax=10+2*UP('h');G.helmet=G.helmetMax;pop(G.px,G.py+50,'ヘルメット！','#ffa726');beep(700,0.1,'triangle',0.07);emit(G.px,G.py+24,12,{sp:90,life:.6,size:2.2,col:['#ffd27a','#fff2c9','#ffa726'],type:'glow'})}
-function giveBoost(){G.boostMax=6+UP('b');G.boost=G.boostMax;pop(G.px,G.py+50,'ブースト！','#4fc3f7');beep(900,0.12,'triangle',0.07);emit(G.px,G.py,14,{sp:110,life:.6,size:2.2,col:['#8fe3ff','#ffffff','#4fc3f7'],type:'glow'})}
+function giveBoost(){G.boostMax=4+UP('b');G.boost=G.boostMax;G.st=Math.min(G.stMax,G.st+35);pop(G.px,G.py+50,'ブースト！ 体力回復','#4fc3f7');beep(900,0.12,'triangle',0.07);emit(G.px,G.py,14,{sp:110,life:.6,size:2.2,col:['#8fe3ff','#ffffff','#4fc3f7'],type:'glow'})}
 function giveHeart(){
   if(G.lives<5){G.lives++;pop(G.px,G.py+50,'1UP！','#ff5a6e')}
   else{G.score+=300;pop(G.px,G.py+50,'+300','#ffd23f')}
@@ -569,7 +570,8 @@ function pressHand(h){
   if(G.mode==='intro'){if(G.modeT>0.8){G.mode='play';G.modeT=0}return}
   if(G.mode==='clear'){if(G.modeT>1.2)nextStage();return}
   if(G.mode!=='play'||G.slip!=null)return;
-  const mul=(G.boost>0?1.8:1)*(G.splat>0?0.5:1)*(G.th.rain?0.85:1)*(G.zone>0?1.35:1);
+  if(G.tired>0)return;
+  const mul=(G.boost>0?1.3:1)*(G.st<G.stMax*0.2?0.8:1)*(G.splat>0?0.5:1)*(G.th.rain?0.85:1)*(G.zone>0?1.35:1);
   let dy;
   if(G.lastHand!==h){
     const gap=G.t-G.lastPress;
@@ -580,6 +582,7 @@ function pressHand(h){
     dy=(16+Math.min(G.combo,20)*0.35)*mul;
     beep(h==='L'?520:660,0.04);
   }else{G.combo=0;G.lastPress=G.t;dy=3*mul}
+  drainSt((G.lastHand===h&&dy<5?0.4:0.9)*(G.boost>0?2:1)*(G.zone>0?0:1)*(0.9+0.04*((G.stage-1)%NT))*(1+0.08*G.lap));
   G.py+=dy;
   const hy=G.py-(h==='L'?G.hL:G.hR)+34,hxp=G.px+(h==='L'?-14:14);
   emit(hxp,G.py+30,2,{sp:26,life:.5,size:2.2,col:['#e8e2d6','#cfc8b8'],type:'puff',g:-14});
@@ -589,7 +592,13 @@ function pressHand(h){
     G.score+=(G.py-G.maxY)*0.5*m*(G.zone>0?2:1);G.maxY=G.py;
   }
 }
+function drainSt(n){
+  if(G.tired>0||n<=0)return;
+  G.st-=n;
+  if(G.st<=0){G.st=0;G.tired=2.2;G.combo=0;G.flow=Math.max(0,G.flow-0.2);pop(G.px,G.py+50,'バテた…','#9fb3c4');beep(130,0.3,'sine',0.07);emit(G.px,G.py+20,8,{sp:50,life:.8,size:2,col:['#bfe9ff','#ffffff'],type:'dot',g:160})}
+}
 function hit(){
+  drainSt(12);
   G.lives--;G.inv=1.8;G.shake=0.35;G.flash=0.5;G.objs=[];G.combo=0;G.hits++;G.flow=0;G.hs=0.09;vib(70);
   beep(110,0.35,'sawtooth',0.08);
   emit(G.px,G.py,18,{sp:150,life:.6,size:2.4,col:['#ff6b4a','#ffd27a','#ffffff'],type:'spark',g:120});
@@ -598,6 +607,7 @@ function hit(){
   else G.slip=Math.max(40,G.py-70);
 }
 function shutterHit(){
+  drainSt(8);
   G.inv=1.0;G.shake=0.2;G.combo=0;G.flow=0;vib(40);
   beep(160,0.2,'square',0.06);
   emit(G.px,G.py,10,{sp:90,life:.5,size:2.2,col:['#ffd27a','#ffffff'],type:'spark',g:120});
@@ -694,9 +704,13 @@ function update(dt){
       if(Math.random()<0.5)emit(G.px+rnd(-12,12),G.py+rnd(-30,30),1,{sp:40,life:.5,size:2,col:['#ffe27a','#ffffff'],type:'glow'});
     }else if(G.combo===0&&G.flow>0)G.flow=Math.max(0,G.flow-0.08*dt);
     if(G.splat>0)G.splat-=dt;
+    if(G.tired>0){G.tired-=dt;G.st=Math.min(G.stMax*0.35,G.st+G.stMax*0.35/2.2*dt);if(Math.random()<0.3)emit(G.px+rnd(-8,8),G.py+rnd(10,34),1,{sp:20,life:.7,size:1.8,col:['#bfe9ff'],type:'dot',g:120})}
+    else if(G.t-G.lastPress>0.45)G.st=Math.min(G.stMax,G.st+(G.zone>0?30:14)*dt);
+    if(G.zone>0)G.st=Math.min(G.stMax,G.st+8*dt);
     if(G.t-G.lastPress>0.7)G.combo=0;
     updateWind(dt);
     const dir=(hold.r?1:0)-(hold.l?1:0);
+    if(dir&&G.tired<=0&&G.zone<=0)drainSt(2.5*dt);
     G.px=Math.max(BX+16,Math.min(BX+BW-16,G.px+dir*120*dt+G.windV*dt));
     {const[ea,eb]=extAt(G.py),lo=ea+16,hi=eb-16;
       if(G.px<lo)G.px=Math.min(lo,G.px+380*dt);else if(G.px>hi)G.px=Math.max(hi,G.px-380*dt)}
@@ -1312,7 +1326,15 @@ function hud(){
   }
   if(zon&&Math.floor(G.t*8)%2){ctx.globalCompositeOperation='lighter';ctx.fillStyle='rgba(255,230,140,.25)';rr(8,70,104,14,7);ctx.fill();ctx.globalCompositeOperation='source-over'}
   tx(zon?'ZONE!!':'ZONE',16,77.5,8,'left',zon?'#7a3a00':'#dff6ff',zon?null:'rgba(0,0,0,.5)',2)}
-  let yy=90;
+  if(live){
+    const sf=Math.max(0,Math.min(1,G.st/G.stMax)),low=sf<0.25||G.tired>0;
+    rr(8,88,104,14,7);ctx.fillStyle='rgba(8,14,30,.72)';ctx.fill();ctx.strokeStyle=low&&Math.floor(G.t*6)%2?'rgba(255,90,90,.95)':'rgba(255,255,255,.28)';ctx.lineWidth=1;ctx.stroke();
+    if(sf>0.01){rr(9.5,89.5,Math.max(6,101*sf),11,5.5);const sg=ctx.createLinearGradient(9,0,111,0);
+      if(G.tired>0){sg.addColorStop(0,'#7b8794');sg.addColorStop(1,'#b0bcc8')}else if(sf<0.25){sg.addColorStop(0,'#ff4d4d');sg.addColorStop(1,'#ff9a6a')}else if(sf<0.5){sg.addColorStop(0,'#ffb02e');sg.addColorStop(1,'#ffe27a')}else{sg.addColorStop(0,'#3fcf6e');sg.addColorStop(1,'#a6f08a')}
+      ctx.fillStyle=sg;ctx.fill()}
+    tx(G.tired>0?'バテ中':'体力',16,95.5,8,'left','#fff','rgba(0,0,0,.55)',2);
+  }
+  let yy=108;
   const pill=(txt,sub,col,frac)=>{
     rr(8,yy,104,19,9.5);ctx.fillStyle='rgba(8,14,30,.7)';ctx.fill();ctx.strokeStyle=alp(col,.7);ctx.lineWidth=1;ctx.stroke();
     rr(10,yy+2,Math.max(4,100*frac),15,7.5);ctx.fillStyle=alp(col,.35);ctx.fill();
@@ -1780,7 +1802,7 @@ document.addEventListener('contextmenu',e=>e.preventDefault());
 
 /* ================= shop (DOM) ================= */
 const helpEl=$('help'),helpBtn=$('helpBtn');
-helpEl.innerHTML='<h2>遊び方・アイテム図鑑</h2><p>ビルの壁をよじ登り、屋上のゴールを目指そう。</p><h3>基本操作</h3><div class="step"><i>1</i><div><b>左手・右手ボタンを交互に押す</b>と登ります。同じ手を続けて押しても、ほとんど進みません。</div></div><div class="step"><i>2</i><div><b>◀ ▶ ボタンを押している間</b>、横に移動します（手足も動きます）。アイテムを取ったり、落ちてくる物を避けるのに使います。</div></div><div class="step"><i>3</i><div><b>パソコンの場合：</b>Z・X＝左右の手（またはSpace・↑で自動交互）、←→＝移動、Esc＝画面を閉じる。</div></div><div class="step"><i>4</i><div><b>コンボ：</b>0.35秒以内に交互に押し続けるとコンボが増え、少しずつ速く登れます。10コンボごとに得点が×0.5ずつ増え、最大×3になります。ダメージを受けるか、0.7秒止まるとリセットされます。</div></div><h3>アイテム</h3><div class="it"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="#f5b820" stroke="#b87410" stroke-width="1.5"/><rect x="11" y="7" width="2" height="10" fill="#fff6c2"/></svg></div><div><b>コイン<span class="tag good">+100点</span></b><span>1枚ごとに100点。さらに強化ショップで使うコインが1枚貯まります。ミッションの対象にもなります。</span></div></div><div class="it"><div class="ic"><svg viewBox="0 0 24 24"><path d="M3 15a9 9 0 0 1 18 0z" fill="#f5a623"/><rect x="2" y="14" width="20" height="4" rx="1.5" fill="#d98a10"/><rect x="11" y="5" width="2" height="9" fill="rgba(0,0,0,.2)"/></svg></div><div><b>ヘルメット<span class="tag good">10秒</span></b><span>窓から投げられる物（植木鉢・缶・バケツ）を弾き返してダメージ無効。弾くと+50点。<b style="display:inline;font-size:inherit">鳥のふんは防げません。</b></span></div></div><div class="it"><div class="ic"><svg viewBox="0 0 24 24"><rect x="8" y="5" width="8" height="15" rx="2.5" fill="#4fc3f7"/><rect x="8.5" y="2" width="7" height="3.5" fill="#dfe6ee"/><rect x="8" y="10" width="8" height="5" fill="#fff"/><path d="M12.5 10l-3 3h2l-1 3 3.5-4h-2z" fill="#f5a623"/></svg></div><div><b>ドリンク<span class="tag good">6秒</span></b><span>登る速さが1.8倍になります。ここぞという時の加速に。</span></div></div><div class="it"><div class="ic"><svg viewBox="0 0 24 24"><path d="M5 19v-7a7 7 0 0 1 14 0v7" fill="none" stroke="#e0364a" stroke-width="4.5"/><path d="M5 19v-3M19 19v-3" stroke="#eef2f8" stroke-width="4.5"/></svg></div><div><b>マグネット<span class="tag good">10秒</span></b><span>近くのコインを自動で引き寄せます。ショップで時間と吸引範囲を強化できます。</span></div></div><div class="it"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 21C4 15 2 11 2 8a5 5 0 0 1 10-1 5 5 0 0 1 10 1c0 3-2 7-10 13z" fill="#e63a5a" stroke="#7a0f26" stroke-width="1"/></svg></div><div><b>ハート<span class="tag good">1UP</span></b><span>ライフが1つ増えます（最大5つ）。5つのときは+300点になります。</span></div></div><div class="it"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 2l3 7 7.5.6-5.7 4.9 1.8 7.4L12 18l-6.6 3.9 1.8-7.4L1.5 9.6 9 9z" fill="#ffc83a" stroke="#8a5400" stroke-width="1"/></svg></div><div><b>★の住人<span class="tag good">プレゼント</span></b><span>窓に★マークの人がいたら近づこう。ヘルメット・ドリンク・マグネット・ハートのどれかをくれます。</span></div></div><h3>邪魔するもの</h3><div class="it"><div class="ic"><svg viewBox="0 0 24 24"><path d="M6 8h12l-2 12H8z" fill="#c8693a"/><rect x="5" y="6" width="14" height="3" rx="1" fill="#a9532b"/><path d="M12 6c-3-4-6-3-6-3s1 4 6 3zm0 0c3-4 6-3 6-3s-1 4-6 3z" fill="#4caf50"/></svg></div><div><b>窓から投げられる物<span class="tag bad">ダメージ</span></b><span>住人が窓から顔を出して、あなたに向けて投げます。当たるとライフ−1、少し下に滑り落ち、1.8秒は無敵です。顔を出したら横にずれて避けよう。</span></div></div><div class="it"><div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" fill="#3b5b44"/><path d="M5 7h14M5 11h14M5 15h14M5 19h14" stroke="#1d3326" stroke-width="1.6"/><path d="M12 1.5l3 5H9z" fill="#ffd23f"/></svg></div><div><b>シャッター<span class="tag bad">落下</span></b><span>窓の周りが黄色く点滅したら、すぐ閉まる合図。窓の位置にいると一段下に落ちます（ライフは減りませんが、コンボが途切れます）。</span></div></div><div class="it"><div class="ic"><svg viewBox="0 0 24 24"><path d="M2 12c5-6 9-6 10 0 1-6 5-6 10 0-5-2-8-1-10 3-2-4-5-5-10-3z" fill="#e8ecf2" stroke="#7b8596" stroke-width="1"/><circle cx="12" cy="19" r="2.4" fill="#f4f1e6" stroke="#9a9a80"/></svg></div><div><b>大きな鳥のふん<span class="tag bad">ぬるぬる</span></b><span>鳥が横切りながらふんを落とします。当たると4秒間、画面が汚れて登る速さが半分に。<b style="display:inline;font-size:inherit">ヘルメットでは防げません。</b></span></div></div><div class="it"><div class="ic"><svg viewBox="0 0 24 24"><path d="M3 8h10a3 3 0 1 0-3-3M3 13h15a3 3 0 1 1-3 3M3 18h8" fill="none" stroke="#9fe3ff" stroke-width="2" stroke-linecap="round"/></svg></div><div><b>天候・環境<span class="tag bad">ステージ次第</span></b><span>強風（横に流される）、雨（登る速さが少し遅くなる）、夜、砂嵐（見えにくい）。ステージが進むほど増えていきます。</span></div></div><h3>ボーナス要素</h3><div class="box"><div class="it" style="background:none;border:none;padding:0;margin:0"><div class="ic"><svg viewBox="0 0 24 24"><path d="M13 2L4 14h6l-1 8 9-12h-6z" fill="#ffd23f" stroke="#a15d00" stroke-width="1"/></svg></div><div><b>ZONE（ゾーン）</b><span>画面左上のゲージを満タンにすると発動。<br>◎ 左右の手をリズム良く（約0.1〜0.3秒間隔で）交互に押す<br>◎ コインを取る／ニアミスをする／ヘルメットで物を弾く<br>で溜まります。ダメージを受けると空に戻り、押すのを止めると少しずつ減ります。<br><b style="display:inline;font-size:inherit;color:#ffd23f">発動中の6秒間：無敵（シャッターも鳥のふんも効かない）／得点2倍／登る速さ1.35倍／コインを自動で吸い寄せ</b></span></div></div></div><div class="it"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="8" cy="12" r="4" fill="#7be0ff"/><path d="M14 4l6 16" stroke="#fff" stroke-width="2" stroke-dasharray="2 2.5"/></svg></div><div><b>ニアミス<span class="tag good">+150点</span></b><span>落ちてくる物をギリギリで避けると発動。ZONEゲージが大きく溜まり、一瞬スローモーションになります。ヘルメット中・ZONE中は対象外です。</span></div></div><h3>ミッションと★</h3><p>各ステージに3つのミッションがあります。クリアしたとき、達成した数だけ★（最大3つ）が付きます。</p><p>・<b>ノーダメージ</b>：ダメージを一度も受けずにクリア<br>・<b>コイン○枚</b>：そのステージでコインを集める（枚数はステージの高さで変化）<br>・<b>ニアミス○回</b>：後半のステージほど回数が増えます</p><p>★1つにつき、クリアボーナス+500点とコイン+20枚。クリアするだけでも、ステージ番号×10枚のコインがもらえます。</p><h3>強化ショップ</h3><p>タイトル・ゲームオーバー画面の「強化・着せ替え」から使えます。貯めたコインで、ヘルメット／ドリンクの持続時間、マグネット強化、ゾーンの溜まりやすさ、初期ライフを強化できます。クライマーのスーツの色も変えられます。コインは途中でゲームオーバーになっても、集めた分は残ります。</p><h3>ステージとコツ</h3><p>世界14か国の名建築が舞台です。ピサの斜塔から始まり、ブルジュ・ハリファまで、進むほど高く、難しくなります。タイトル画面から世界地図が開きます。ピンをタップ（◀▶でも選べます）して、もう一度タップすると出発です。クリアすると次の国が解放され、全クリア後は難易度が上がった2周目に進みます。建物ごとに形が違い、上が細くなる所では、その幅の内側で登ります。</p><p>・ヘルメットとZONEを切らさないのがスコアの近道<br>・住人が顔を出したら、まず横に動いて避ける<br>・窓の上は危険。シャッターの点滅を見たら窓の位置を外す<br>・鳥の「！」マークが出たら、ふんが落ちる位置から離れる</p><button class="hx" data-x="1">閉じる</button>';
+helpEl.innerHTML='<h2>遊び方・アイテム図鑑</h2><p>ビルの壁をよじ登り、屋上のゴールを目指そう。</p><h3>基本操作</h3><div class="step"><i>1</i><div><b>左手・右手ボタンを交互に押す</b>と登ります。同じ手を続けて押しても、ほとんど進みません。</div></div><div class="step"><i>2</i><div><b>◀ ▶ ボタンを押している間</b>、横に移動します（手足も動きます）。アイテムを取ったり、落ちてくる物を避けるのに使います。</div></div><div class="step"><i>3</i><div><b>パソコンの場合：</b>Z・X＝左右の手（またはSpace・↑で自動交互）、←→＝移動、Esc＝画面を閉じる。</div></div><div class="step"><i>4</i><div><b>コンボ：</b>0.35秒以内に交互に押し続けるとコンボが増え、少しずつ速く登れます。10コンボごとに得点が×0.5ずつ増え、最大×3になります。ダメージを受けるか、0.7秒止まるとリセットされます。</div></div><h3>体力（スタミナ）</h3><div class="step"><i>★</i><div><b>画面左の緑のゲージが体力です。</b>登るほど、横に動くほど減り、ブースト中は減りが2倍になります。手を止めて約0.5秒たつと少しずつ回復します。</div></div><div class="step"><i>★</i><div><b>体力が20%を切ると登る速さが落ち、0になると約2秒「バテ」て動けなくなります。</b>物に当たる・シャッターに落ちると体力も減ります。ドリンクで回復、ゾーン中は減りません。</div></div><h3>アイテム</h3><div class="it"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="#f5b820" stroke="#b87410" stroke-width="1.5"/><rect x="11" y="7" width="2" height="10" fill="#fff6c2"/></svg></div><div><b>コイン<span class="tag good">+100点</span></b><span>1枚ごとに100点。さらに強化ショップで使うコインが1枚貯まります。ミッションの対象にもなります。</span></div></div><div class="it"><div class="ic"><svg viewBox="0 0 24 24"><path d="M3 15a9 9 0 0 1 18 0z" fill="#f5a623"/><rect x="2" y="14" width="20" height="4" rx="1.5" fill="#d98a10"/><rect x="11" y="5" width="2" height="9" fill="rgba(0,0,0,.2)"/></svg></div><div><b>ヘルメット<span class="tag good">10秒</span></b><span>窓から投げられる物（植木鉢・缶・バケツ）を弾き返してダメージ無効。弾くと+50点。<b style="display:inline;font-size:inherit">鳥のふんは防げません。</b></span></div></div><div class="it"><div class="ic"><svg viewBox="0 0 24 24"><rect x="8" y="5" width="8" height="15" rx="2.5" fill="#4fc3f7"/><rect x="8.5" y="2" width="7" height="3.5" fill="#dfe6ee"/><rect x="8" y="10" width="8" height="5" fill="#fff"/><path d="M12.5 10l-3 3h2l-1 3 3.5-4h-2z" fill="#f5a623"/></svg></div><div><b>ドリンク<span class="tag good">4秒</span></b><span>体力を35回復し、4秒間だけ登る速さが1.3倍になります。ただし体力の減りが2倍になるので、使いどころに注意。ここぞという時の加速に。</span></div></div><div class="it"><div class="ic"><svg viewBox="0 0 24 24"><path d="M5 19v-7a7 7 0 0 1 14 0v7" fill="none" stroke="#e0364a" stroke-width="4.5"/><path d="M5 19v-3M19 19v-3" stroke="#eef2f8" stroke-width="4.5"/></svg></div><div><b>マグネット<span class="tag good">10秒</span></b><span>近くのコインを自動で引き寄せます。ショップで時間と吸引範囲を強化できます。</span></div></div><div class="it"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 21C4 15 2 11 2 8a5 5 0 0 1 10-1 5 5 0 0 1 10 1c0 3-2 7-10 13z" fill="#e63a5a" stroke="#7a0f26" stroke-width="1"/></svg></div><div><b>ハート<span class="tag good">1UP</span></b><span>ライフが1つ増えます（最大5つ）。5つのときは+300点になります。</span></div></div><div class="it"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 2l3 7 7.5.6-5.7 4.9 1.8 7.4L12 18l-6.6 3.9 1.8-7.4L1.5 9.6 9 9z" fill="#ffc83a" stroke="#8a5400" stroke-width="1"/></svg></div><div><b>★の住人<span class="tag good">プレゼント</span></b><span>窓に★マークの人がいたら近づこう。ヘルメット・ドリンク・マグネット・ハートのどれかをくれます。</span></div></div><h3>邪魔するもの</h3><div class="it"><div class="ic"><svg viewBox="0 0 24 24"><path d="M6 8h12l-2 12H8z" fill="#c8693a"/><rect x="5" y="6" width="14" height="3" rx="1" fill="#a9532b"/><path d="M12 6c-3-4-6-3-6-3s1 4 6 3zm0 0c3-4 6-3 6-3s-1 4-6 3z" fill="#4caf50"/></svg></div><div><b>窓から投げられる物<span class="tag bad">ダメージ</span></b><span>住人が窓から顔を出して、あなたに向けて投げます。当たるとライフ−1、少し下に滑り落ち、1.8秒は無敵です。顔を出したら横にずれて避けよう。</span></div></div><div class="it"><div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" fill="#3b5b44"/><path d="M5 7h14M5 11h14M5 15h14M5 19h14" stroke="#1d3326" stroke-width="1.6"/><path d="M12 1.5l3 5H9z" fill="#ffd23f"/></svg></div><div><b>シャッター<span class="tag bad">落下</span></b><span>窓の周りが黄色く点滅したら、すぐ閉まる合図。窓の位置にいると一段下に落ちます（ライフは減りませんが、コンボが途切れます）。</span></div></div><div class="it"><div class="ic"><svg viewBox="0 0 24 24"><path d="M2 12c5-6 9-6 10 0 1-6 5-6 10 0-5-2-8-1-10 3-2-4-5-5-10-3z" fill="#e8ecf2" stroke="#7b8596" stroke-width="1"/><circle cx="12" cy="19" r="2.4" fill="#f4f1e6" stroke="#9a9a80"/></svg></div><div><b>大きな鳥のふん<span class="tag bad">ぬるぬる</span></b><span>鳥が横切りながらふんを落とします。当たると4秒間、画面が汚れて登る速さが半分に。<b style="display:inline;font-size:inherit">ヘルメットでは防げません。</b></span></div></div><div class="it"><div class="ic"><svg viewBox="0 0 24 24"><path d="M3 8h10a3 3 0 1 0-3-3M3 13h15a3 3 0 1 1-3 3M3 18h8" fill="none" stroke="#9fe3ff" stroke-width="2" stroke-linecap="round"/></svg></div><div><b>天候・環境<span class="tag bad">ステージ次第</span></b><span>強風（横に流される）、雨（登る速さが少し遅くなる）、夜、砂嵐（見えにくい）。ステージが進むほど増えていきます。</span></div></div><h3>ボーナス要素</h3><div class="box"><div class="it" style="background:none;border:none;padding:0;margin:0"><div class="ic"><svg viewBox="0 0 24 24"><path d="M13 2L4 14h6l-1 8 9-12h-6z" fill="#ffd23f" stroke="#a15d00" stroke-width="1"/></svg></div><div><b>ZONE（ゾーン）</b><span>画面左上のゲージを満タンにすると発動。<br>◎ 左右の手をリズム良く（約0.1〜0.3秒間隔で）交互に押す<br>◎ コインを取る／ニアミスをする／ヘルメットで物を弾く<br>で溜まります。ダメージを受けると空に戻り、押すのを止めると少しずつ減ります。<br><b style="display:inline;font-size:inherit;color:#ffd23f">発動中の6秒間：無敵（シャッターも鳥のふんも効かない）／得点2倍／登る速さ1.35倍／コインを自動で吸い寄せ</b></span></div></div></div><div class="it"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="8" cy="12" r="4" fill="#7be0ff"/><path d="M14 4l6 16" stroke="#fff" stroke-width="2" stroke-dasharray="2 2.5"/></svg></div><div><b>ニアミス<span class="tag good">+150点</span></b><span>落ちてくる物をギリギリで避けると発動。ZONEゲージが大きく溜まり、一瞬スローモーションになります。ヘルメット中・ZONE中は対象外です。</span></div></div><h3>ミッションと★</h3><p>各ステージに3つのミッションがあります。クリアしたとき、達成した数だけ★（最大3つ）が付きます。</p><p>・<b>ノーダメージ</b>：ダメージを一度も受けずにクリア<br>・<b>コイン○枚</b>：そのステージでコインを集める（枚数はステージの高さで変化）<br>・<b>ニアミス○回</b>：後半のステージほど回数が増えます</p><p>★1つにつき、クリアボーナス+500点とコイン+20枚。クリアするだけでも、ステージ番号×10枚のコインがもらえます。</p><h3>強化ショップ</h3><p>タイトル・ゲームオーバー画面の「強化・着せ替え」から使えます。貯めたコインで、ヘルメット／ドリンクの持続時間、マグネット強化、ゾーンの溜まりやすさ、初期ライフを強化できます。クライマーのスーツの色も変えられます。コインは途中でゲームオーバーになっても、集めた分は残ります。</p><h3>ステージとコツ</h3><p>世界14か国の名建築が舞台です。ピサの斜塔から始まり、ブルジュ・ハリファまで、進むほど高く、難しくなります。タイトル画面から世界地図が開きます。ピンをタップ（◀▶でも選べます）して、もう一度タップすると出発です。クリアすると次の国が解放され、全クリア後は難易度が上がった2周目に進みます。建物ごとに形が違い、上が細くなる所では、その幅の内側で登ります。</p><p>・ヘルメットとZONEを切らさないのがスコアの近道<br>・住人が顔を出したら、まず横に動いて避ける<br>・窓の上は危険。シャッターの点滅を見たら窓の位置を外す<br>・鳥の「！」マークが出たら、ふんが落ちる位置から離れる</p><button class="hx" data-x="1">閉じる</button>';
 function openHelp(){shopOpen=true;helpEl.hidden=false;helpEl.scrollTop=0;beep(700,0.06)}
 function closeHelp(){shopOpen=false;helpEl.hidden=true;beep(500,0.05)}
 helpBtn.addEventListener('click',()=>{ensureAudio();openHelp()});
