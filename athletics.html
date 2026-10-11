@@ -1,0 +1,2442 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ATHLETICS 陸上競技</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=DotGothic16&family=M+PLUS+1p:wght@400;700;800&display=swap">
+<style>
+:root{
+  color-scheme: dark;
+  --night:#0b121a; --night2:#101c27; --panel:#142230; --panel2:#1b2d3c; --line:#26394a;
+  --led:#ffb547; --led-soft:rgba(255,181,71,.14); --tartan:#c24a31; --tartan-deep:#8f3120; --grass:#2e6b4a;
+  --flood:#dfeaf5; --ink:#eef2f4; --muted:#8fa2b0; --good:#6fd39a; --bad:#ff6b5b; --cyan:#5fd0e6;
+  --gold:#ffcf4a; --silver:#cfd8de; --bronze:#d08a52;
+  --disp:"Dela Gothic One", "Hiragino Sans", "Yu Gothic", sans-serif;
+  --dot:"DotGothic16", "MS Gothic", monospace;
+  --body:"M PLUS 1p", "Hiragino Sans", "Yu Gothic", sans-serif;
+}
+html,body{height:100%}
+[hidden]{display:none!important}
+*{box-sizing:border-box}
+body{margin:0;padding-inline:12px;padding-block:8px;overflow:hidden;color:var(--ink);font-family:var(--body);
+  background:radial-gradient(120% 60% at 50% -10%, #1d3246 0%, var(--night) 60%) fixed, var(--night);
+  -webkit-tap-highlight-color:transparent;overscroll-behavior:none}
+.app{height:100%;max-width:620px;margin:0 auto;display:flex;flex-direction:column}
+.screen{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
+.scroll{overflow-y:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+button{font:inherit;cursor:pointer;color:inherit}
+button:focus-visible{outline:2px solid var(--led);outline-offset:2px}
+.icon{background:var(--panel);border:1px solid var(--line);border-radius:10px;height:38px;min-width:38px;padding:0 10px;font-size:14px;font-weight:800;flex:none}
+
+/* ===== menu ===== */
+.hero{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;padding-top:4px}
+.logo{margin:0;line-height:.9}
+.logo b{display:block;font-family:var(--disp);font-weight:400;font-size:54px;letter-spacing:-.01em;color:var(--ink);text-shadow:0 0 30px rgba(223,234,245,.18)}
+.logo b i{font-style:normal;color:var(--led)}
+.logo span{display:block;font-family:var(--dot);font-size:12px;letter-spacing:.34em;color:var(--muted);margin-top:6px}
+.lead{margin:0;color:var(--muted);font-size:12px;line-height:1.6}
+.cups{display:flex;flex-direction:column;gap:0;padding-bottom:10px;position:relative}
+.cup{position:relative;display:grid;grid-template-columns:34px 1fr auto;align-items:center;gap:12px;text-align:left;
+  background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:12px;padding:11px 12px;margin-bottom:7px}
+.cup .no{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-family:var(--disp);font-size:15px;background:var(--night);border:1px solid var(--line);color:var(--muted)}
+.cup.open .no{border-color:var(--led);color:var(--led)}
+.cup .nm{font-family:var(--disp);font-size:17px;line-height:1.2}
+.chips{display:flex;flex-wrap:wrap;gap:3px;margin-top:5px}
+.chip{font-size:10px;line-height:1;padding:3px 6px;border-radius:99px;background:rgba(255,255,255,.06);color:var(--muted);white-space:nowrap}
+.chip.fin{background:var(--led-soft);color:var(--led)}
+.cup .rt{text-align:right;font-family:var(--dot);font-size:16px;color:var(--led);font-variant-numeric:tabular-nums;white-space:nowrap}
+.cup .rt small{display:block;font-family:var(--body);font-size:10px;color:var(--muted);margin-top:2px}
+.cup[disabled]{cursor:default;opacity:.42}
+.cup[disabled] .nm{color:var(--muted)}
+.medal{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:-2px;margin-right:5px;box-shadow:inset 0 -2px 0 rgba(0,0,0,.25),0 0 10px rgba(255,207,74,.25)}
+.m1{background:var(--gold)} .m2{background:var(--silver)} .m3{background:var(--bronze)}
+
+/* ===== race ===== */
+.bar{display:flex;align-items:center;gap:8px}
+.ttl{flex:1;min-width:0;line-height:1.15}
+.ttl small{display:block;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ttl b{display:block;font-family:var(--disp);font-weight:400;font-size:19px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.board{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;padding:2px;border-radius:8px;flex:none;
+  background:#05080a;border:1px solid #243340;box-shadow:inset 0 0 0 1px #000}
+.cell{padding:4px 8px;min-width:0;border-radius:5px;
+  background:radial-gradient(circle at 1px 1px, rgba(255,181,71,.08) 1px, transparent 1.4px) 0 0/4px 4px, #080d10}
+.cell .k{display:block;font-size:9px;letter-spacing:.16em;color:#6f7f8a}
+.cell .v{display:block;font-family:var(--dot);font-size:20px;color:var(--led);font-variant-numeric:tabular-nums;text-shadow:0 0 8px rgba(255,181,71,.55);white-space:nowrap;overflow:hidden}
+.play{position:relative;flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
+.stage{position:relative;flex:1.2 1 0;min-height:0;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:#0b1217}
+.stage canvas,.pad canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.call{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;font-family:var(--disp);font-size:clamp(30px,10vw,58px);color:#fff;text-shadow:0 4px 0 rgba(0,0,0,.7),0 0 30px rgba(0,0,0,.6)}
+.call.foul{color:var(--bad)} .call.go{color:var(--led)}
+.pad{position:relative;flex:1 1 0;min-height:130px;border-radius:16px;border:1px solid var(--line);overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;cursor:pointer;background:var(--panel)}
+
+/* overlays */
+.sheet{position:absolute;inset:0;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;
+  background:linear-gradient(180deg,rgba(16,28,39,.97),rgba(9,15,21,.98));border:1px solid var(--line);box-shadow:0 20px 50px rgba(0,0,0,.5)}
+.eyebrow{font-size:11px;letter-spacing:.2em;color:var(--muted)}
+.big{font-family:var(--disp);font-size:34px;line-height:1.1}
+.big em{font-style:normal;color:var(--led)}
+.rule{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:5px 10px;border-radius:99px;background:var(--led-soft);color:var(--led);align-self:flex-start}
+.lst{flex:1;min-height:0;overflow-y:auto;border-radius:8px;background:#070b0e;border:1px solid #1f2d38}
+.lst table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+.lst td{padding:5px 8px;border-bottom:1px solid #16222c;white-space:nowrap}
+.lst td.ln{width:30px;font-family:var(--dot);color:var(--muted);text-align:center}
+.lst td.nm{overflow:hidden;text-overflow:ellipsis;max-width:40vw}
+.lst td.t{text-align:right;font-family:var(--dot);color:var(--led)}
+.lst td.q{width:22px;font-family:var(--disp);font-size:12px;color:var(--good);text-align:center}
+.lst tr.me td{background:var(--led-soft);font-weight:800}
+.lst tr.cut td{border-bottom:2px dashed rgba(111,211,154,.5)}
+.sw{display:inline-block;width:8px;height:14px;border-radius:2px;vertical-align:-2px;margin-right:7px}
+.rhead{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.rtime{font-family:var(--dot);font-size:22px;color:var(--ink)}
+.status{font-weight:800;font-size:14px}
+.status.ok{color:var(--good)} .status.out{color:var(--bad)} .status.gold{color:var(--gold)}
+.badge{display:inline-block;font-size:10px;font-weight:800;padding:2px 8px;border-radius:99px;margin-left:4px;vertical-align:2px}
+.badge.pb{background:var(--good);color:#082014}
+.badge.ng{background:#3a2a1a;color:var(--led)}
+.badge.un{background:var(--led);color:#1d1508}
+.mini{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:11px;color:var(--muted)}
+.mini b{font-family:var(--dot);font-weight:400;color:var(--ink);font-size:13px;margin-left:3px}
+.btns{display:flex;gap:8px;flex:none}
+.btns button{flex:1;border:1px solid var(--line);border-radius:12px;padding:13px 6px;font-weight:800;font-size:15px;background:var(--panel2)}
+.btns button.main{background:linear-gradient(180deg,#d8563a,var(--tartan-deep));border-color:#e0694d;color:#fff;box-shadow:0 6px 16px rgba(194,74,49,.35)}
+
+/* ===== howto ===== */
+.how{display:flex;flex-direction:column;gap:12px;padding-bottom:16px;font-size:14px;line-height:1.75}
+.how section{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.how h3{margin:0 0 6px;font-family:var(--disp);font-weight:400;font-size:16px;color:var(--led)}
+.how p{margin:0} .how ol,.how ul{margin:0;padding-left:1.3em}
+.how table{border-collapse:collapse;width:100%;font-size:13px;margin-top:4px}
+.how td,.how th{border-bottom:1px solid var(--line);padding:4px 6px;text-align:left}
+.how th{color:var(--muted);font-weight:400}
+.how kbd{font-family:var(--dot);background:var(--panel2);border:1px solid var(--line);border-radius:4px;padding:0 5px}
+.hbtns{display:flex;gap:6px}
+.tp{color:var(--cyan);font-family:var(--dot);font-size:13px;margin-left:4px}
+.badge.tp2{background:var(--cyan);color:#06222a}
+.train{display:flex;flex-direction:column;gap:10px;padding-bottom:16px}
+.tsum{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
+.tsum small{display:block;font-size:11px;color:var(--muted)}
+.tsum b{font-family:var(--dot);font-weight:400;font-size:26px;color:var(--led)}
+.tcard{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:grid;gap:7px}
+.thead{display:flex;justify-content:space-between;align-items:baseline}
+.thead b{font-family:var(--disp);font-weight:400;font-size:17px}
+.thead span{font-family:var(--dot);color:var(--led);font-size:15px}
+.tdesc{font-size:12px;color:var(--muted);line-height:1.5}
+.tbar{height:8px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden}
+.tbar i{display:block;height:100%;background:linear-gradient(90deg,var(--tartan),var(--led))}
+.tnow{display:flex;justify-content:space-between;font-size:12px;font-variant-numeric:tabular-nums}
+.tnow em{font-style:normal;color:var(--good)}
+.tup{border:1px solid #e0694d;border-radius:10px;padding:10px;font-weight:800;font-size:14px;background:linear-gradient(180deg,#d8563a,var(--tartan-deep));color:#fff}
+.tup[disabled]{opacity:.35;cursor:default;background:var(--panel2);border-color:var(--line)}
+@media (max-width:380px){ .logo b{font-size:44px} .cell .v{font-size:17px} .big{font-size:28px} }
+@media (prefers-reduced-motion:reduce){ *{transition:none!important} }
+/* ===== 追加スタイル（種目一覧・大会一覧・試技表示） ===== */
+.sec{font-family:var(--dot);font-size:12px;letter-spacing:.3em;color:var(--muted);margin:8px 2px 2px}
+.evs{display:flex;flex-direction:column;padding-bottom:12px}
+.evc{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;text-align:left;background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:7px}
+.evc .nm{font-family:var(--disp);font-size:16px;line-height:1.2}
+.evc .ab{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.4}
+.evc .rt{text-align:right;font-family:var(--dot);font-size:14px;color:var(--led);white-space:nowrap}
+.dots{display:flex;gap:3px;margin-top:6px}
+.dots i{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.1);display:block}
+.dots i.g1{background:var(--gold)} .dots i.g2{background:var(--silver)} .dots i.g3{background:var(--bronze)} .dots i.op{background:var(--led-soft);box-shadow:inset 0 0 0 1px var(--led)}
+.tag{display:inline-block;font-size:10px;padding:2px 6px;border-radius:99px;background:rgba(95,208,230,.14);color:var(--cyan);margin-left:6px;vertical-align:2px}
+.cup .rt.s{font-size:15px}
+.sel{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:10px;height:38px;padding:0 8px;font:inherit;font-size:13px;width:100%}
+.tryline{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12px;color:var(--muted)}
+.tryline b{font-family:var(--dot);font-weight:400;color:var(--ink);font-size:13px;margin-left:3px}
+.tryline b.f{color:var(--bad)} .tryline b.best{color:var(--led)}
+.lst td.pts{text-align:right;font-family:var(--dot);color:var(--cyan);font-size:12px}
+.cardrow{display:flex;gap:6px}
+.card{width:14px;height:20px;border-radius:2px;background:#e7c43a;border:1px solid #8a6f10}
+
+.els{display:flex;flex-wrap:wrap;gap:4px;margin:2px 0 8px}
+.els i{font-style:normal;font-size:10px;color:var(--cyan);border:1px solid rgba(95,208,230,.45);border-radius:10px;padding:1px 8px}
+.ghostbtn{margin-left:auto;font-size:10px;color:var(--muted);background:none;border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:2px 10px;cursor:pointer}
+
+.gear .grow{display:flex;align-items:baseline;gap:8px;font-size:12px}
+.gear .gk{color:var(--muted);width:86px;flex:none}
+.gear .grow b{flex:1;font-weight:700}
+.gear .gv{font-family:var(--dot);color:var(--led)}
+.badge.sp{background:linear-gradient(90deg,#ffcf4a,#ff9f43);color:#1a1100}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- 種目一覧 -->
+  <div class="screen" id="scMenu">
+    <div class="hero">
+      <h1 class="logo"><b>ATH<i>L</i>ETICS</b><span>OLYMPIC TRACK &amp; FIELD</span></h1>
+      <div class="hbtns"><button class="icon" id="toTrain">育成<span class="tp" id="tpMenu"></span></button><button class="icon" id="toHow1">遊び方</button></div>
+    </div>
+    <p class="lead">25種目から選んで挑戦。各種目は8つの大会（市民大会→オリンピック）に分かれ、決勝で3位以内に入ると次の大会へ。走る・跳ぶ・投げるとTPがたまるので「育成」で強化しましょう。</p>
+    <div class="evs scroll" id="events"></div>
+  </div>
+
+  <!-- 大会一覧（種目ごと） -->
+  <div class="screen" id="scTiers" hidden>
+    <div class="bar"><button class="icon" id="tiersBack">← 種目</button><div class="ttl"><small id="tiTag">種目</small><b id="tiName">100m</b></div><button class="icon" id="toHow3">?</button></div>
+    <p class="lead" id="tiAbout"></p>
+    <div class="cups scroll" id="cups"></div>
+  </div>
+
+  <!-- レース -->
+  <div class="screen" id="scRace" hidden>
+    <div class="bar">
+      <button class="icon" id="toMenu" aria-label="大会一覧へ">≡</button>
+      <div class="ttl"><small id="tCup">大会</small><b id="tRound">予選</b></div>
+      <button class="icon" id="toHow2" aria-label="遊び方">?</button>
+    </div>
+    <div class="board">
+      <div class="cell"><span class="k" id="kA">TIME</span><span class="v" id="bTime">0.00</span></div>
+      <div class="cell"><span class="k" id="kB">km/h</span><span class="v" id="bSpeed">0.0</span></div>
+      <div class="cell"><span class="k" id="kC">POS</span><span class="v" id="bRank">-</span></div>
+      <div class="cell"><span class="k" id="kD">BEST</span><span class="v" id="bPB">--.--</span></div>
+    </div>
+    <div class="play">
+      <div class="stage" id="stage"><canvas id="cv"></canvas><div class="call" id="call"></div></div>
+      <div class="pad" id="pad" role="button" tabindex="0" aria-label="タップエリア"><canvas id="rc"></canvas></div>
+
+      <div class="sheet" id="intro" hidden>
+        <div class="eyebrow" id="iCup">大会</div>
+        <div class="big" id="iRound">予選 <em>3組</em></div>
+        <div class="rule" id="iRule">上位4着 → 準決勝</div>
+        <div class="els" id="iEl"></div>
+        <div class="lst"><table><tbody id="iList"></tbody></table></div>
+        <div class="btns"><button id="iBack">大会一覧</button><button class="main" id="iGo">位置につく</button></div>
+      </div>
+
+      <div class="sheet" id="result" hidden>
+        <div class="eyebrow" id="rCup">大会</div>
+        <div class="rhead"><span class="big" id="rPos">1着</span><span class="rtime" id="rTime">10.00</span></div>
+        <div><span class="status" id="rStatus"></span><span id="rBadges"></span></div>
+        <div class="lst"><table><tbody id="rList"></tbody></table></div>
+        <div class="mini" id="rMini"></div>
+        <div class="btns" id="rBtns"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 育成 -->
+  <div class="screen" id="scTrain" hidden>
+    <div class="bar"><button class="icon" id="trainBack">← 戻る</button><div class="ttl"><small>レースで獲得したTPで強化</small><b>育成</b></div><div class="tp" id="tTPbar" style="font-size:16px"></div></div>
+    <div class="train scroll">
+      <select class="sel" id="tSel" aria-label="理論値を見る種目"></select>
+      <div class="tsum"><div><small id="tIdealLbl">いまの理論値（ミスなし）</small><b id="tIdeal">--.--</b><small id="tIdealSub"></small></div><div style="text-align:right"><small>所持TP</small><b id="tTP" style="color:var(--cyan)">0</b></div></div>
+      <div id="tGear" class="tcard gear"></div>
+      <div id="tList" style="display:flex;flex-direction:column;gap:10px"></div>
+    </div>
+  </div>
+
+  <!-- 遊び方 -->
+  <div class="screen" id="scHow" hidden>
+    <div class="bar"><button class="icon" id="howBack">← 戻る</button><div class="ttl"><b>遊び方</b></div></div>
+    <div class="how scroll" id="howBody"></div>
+  </div>
+</div>
+<script>
+(() => {
+// ===== 00-logic.js : 画面に依存しない計算（種目データ・較正・理論値・得点） =====
+const LANES=8, ME=3;
+const TIERS=[
+  {name:'市民大会',sub:'市民陸上競技会',pool:'jp'},{name:'地区大会',sub:'県南地区予選',pool:'jp'},
+  {name:'県大会',sub:'県選手権',pool:'jp'},{name:'全国大会',sub:'全日本実業団',pool:'jp'},
+  {name:'日本選手権',sub:'日本一決定戦',pool:'jp'},{name:'アジア大会',sub:'アジア一決定戦',pool:'as'},
+  {name:'世界陸上',sub:'世界選手権',pool:'w'},{name:'オリンピック',sub:'五輪',pool:'w'}];
+const POOLS={
+  jp:['サトウ','スズキ','タカハシ','ナカムラ','コバヤシ','ヤマモト','イトウ','ワタナベ','カトウ','ヨシダ','ヤマダ','ササキ','マツモト','イノウエ','キムラ','シミズ','モリ','イケダ','ハシモト','アベ'],
+  as:['チェン','キム','パク','ワン','リー','シン','グエン','アル＝サイード','ラーマン','タン','オン','ハサン','ヤマグチ','ソン','ファン'],
+  w:['ルーカス','サンチェス','オコンクォ','ハリス','ミラー','カーン','ベイリー','ロドリゲス','ンドゥール','パーマー','ディアス','オルセン','モロー','フェレイラ','アダムス','ブラント','クワメ','シモンズ','グラント','デュボワ']};
+const R_HEAT={name:'予選',q:4,groups:6}, R_QF={name:'準々決勝',q:3,groups:4}, R_SF={name:'準決勝',q:2,groups:3}, R_F={name:'決勝',q:3,groups:0};
+const WIN={P:0.08,G:0.15,O:0.22}, GAIN={P:0.12,G:0.08,O:0.03,M:-0.03};
+const JT={P:'PERFECT',G:'GOOD',O:'OK',M:'MISS'}, JC={P:'#ffb547',G:'#6fd39a',O:'#5fd0e6',M:'#ff6b5b'};
+const MAXLV=20, STAT_KEYS=['spd','acc','sta','pow','tec'];
+const tierGap=t=>0.22*(7-t)/7;            // 優勝ラインが「五輪の優勝記録」からどれだけ離れているか
+const shuffle=a=>{ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const gauss=()=>{ let s=0; for(let i=0;i<6;i++) s+=Math.random(); return (s-3)/Math.sqrt(0.5); };
+
+// ---- 種目定義 -------------------------------------------------------------
+// eng: phys=タップ走(リズム) / dist=ペース配分走 / field=タイミング競技 / combo=混成
+const EVS=[]; const EVMAP={};
+function defEv(o){ o.dir=o.unit==='s'?-1:1; EVS.push(o); EVMAP[o.id]=o; return o; }
+// 短距離系（タップ走）
+defEv({id:'100m',name:'100m',sec:'短距離',eng:'phys',unit:'s',Te:9.83,D:100,fadeFrom:70,fadeRate:0.0015,fdk:0.04,k:1,pm:1,rd:'sprint',dip:true,fixedK:true,about:'基本種目。リズムよくタップして加速。'});
+defEv({id:'200m',name:'200m',sec:'短距離',eng:'phys',unit:'s',Te:19.8,D:200,fadeFrom:110,fadeRate:0.00055,fdk:0.03,pm:1,rd:'sprint',dip:true,about:'後半の失速が大きい。持久力が効く。'});
+defEv({id:'400m',name:'400m',sec:'短距離',eng:'phys',unit:'s',Te:43.8,D:400,fadeFrom:120,fadeRate:0.00033,fdk:0.03,pm:1.25,rd:'sprint',dip:true,about:'タップ間隔がゆったり。持久力が最重要。'});
+defEv({id:'110mH',name:'110mハードル',sec:'短距離',eng:'phys',unit:'s',Te:12.9,D:110,fadeFrom:75,fadeRate:0.0015,fdk:0.04,pm:1,rd:'sprint',dip:true,hurdle:{first:13.72,gap:9.14,n:10},about:'ハードル手前でタイミング良くタップ（跳越）。'});
+defEv({id:'100mH',name:'100mハードル',sec:'短距離',eng:'phys',unit:'s',Te:12.3,D:100,fadeFrom:70,fadeRate:0.0015,fdk:0.04,pm:1,rd:'sprint',dip:true,hurdle:{first:13.0,gap:8.5,n:10},about:'女子種目。ハードル間が短くテンポが速い。'});
+defEv({id:'400mH',name:'400mハードル',sec:'短距離',eng:'phys',unit:'s',Te:46.2,D:400,fadeFrom:120,fadeRate:0.00033,fdk:0.03,pm:1.25,rd:'sprint',dip:true,hurdle:{first:45,gap:35,n:10},about:'10台のハードルを越えながら400m。'});
+defEv({id:'4x100m',name:'4×100mリレー',sec:'短距離',eng:'phys',unit:'s',Te:37.4,D:400,leg:100,fadeFrom:70,fadeRate:0.0015,fdk:0.04,pm:1,rd:'mid',dip:true,baton:true,about:'4人分を連続で走る。受け渡しの「BATON」タップが鍵。'});
+// 中長距離系（ペース配分）
+defEv({id:'800m',name:'800m',sec:'中長距離',eng:'dist',unit:'s',Te:100.5,D:800,W20:300,rd:'mid',ts:3,win:46,about:'ペース配分とラストスパート。'});
+defEv({id:'1500m',name:'1500m',sec:'中長距離',eng:'dist',unit:'s',Te:209,D:1500,W20:300,rd:'mid',ts:5,win:56,about:'中盤の位置取りと、スパートの開始時期。'});
+defEv({id:'3000mSC',name:'3000m障害',sec:'中長距離',eng:'dist',unit:'s',Te:520,D:3000,W20:280,rd:'fin',ts:12,win:60,water:{every:400},about:'水濠が7回。「JUMP」のタイミングを外すと失速。'});
+defEv({id:'5000m',name:'5000m',sec:'中長距離',eng:'dist',unit:'s',Te:772,D:5000,W20:260,rd:'fin',ts:17,win:64,about:'長丁場。前を走る選手の後ろでドラフト効果。'});
+defEv({id:'10000m',name:'10000m',sec:'中長距離',eng:'dist',unit:'s',Te:1595,D:10000,W20:240,rd:'fin',ts:35,win:70,about:'さらに長い。一定ペースを守る我慢の種目。'});
+defEv({id:'4x400m',name:'4×400mリレー',sec:'中長距離',eng:'dist',unit:'s',Te:178,D:1600,legs:4,W20:170,rd:'fin',ts:4,win:46,about:'走者交代ごとに体力が回復。毎区間ペース配分と、受け渡しの「BATON」タップ。'});
+defEv({id:'marathon',name:'マラソン',sec:'ロード',eng:'dist',unit:'s',Te:7500,D:42195,W20:220,rd:'fin',ts:160,win:80,about:'42.195km。序盤の突っ込みすぎ厳禁。'});
+defEv({id:'20kmW',name:'20km競歩',sec:'ロード',eng:'dist',unit:'s',Te:4750,D:20000,W20:70,rd:'fin',ts:100,win:70,walk:true,about:'速すぎると「浮き」の警告。3枚でDQ。'});
+// 跳躍（タイミング競技）
+defEv({id:'HJ',name:'走高跳',sec:'跳躍',eng:'field',unit:'m',Te:2.38,kind:'vert',rd:'fin',w:{spd:.2,pow:.45,tec:.35},about:'バーの高さに挑戦。3回連続失敗で終了。'});
+defEv({id:'PV',name:'棒高跳',sec:'跳躍',eng:'field',unit:'m',Te:6.0,kind:'vert',rd:'fin',w:{spd:.35,pow:.3,tec:.35},about:'助走→ポール突き→振り上げ→バー越え。'});
+defEv({id:'LJ',name:'走幅跳',sec:'跳躍',eng:'field',unit:'m',Te:8.55,kind:'horiz',tries:6,rd:'fin',w:{spd:.35,pow:.35,tec:.3},about:'助走し、踏切板でタップ。6回の試技。'});
+defEv({id:'TJ',name:'三段跳',sec:'跳躍',eng:'field',unit:'m',Te:17.6,kind:'horiz',tries:6,rd:'fin',w:{spd:.3,pow:.35,tec:.35},about:'ホップ・ステップ・ジャンプの3連続タップ。'});
+// 投てき
+defEv({id:'SP',name:'砲丸投',sec:'投てき',eng:'field',unit:'m',Te:22.0,kind:'throw',tries:6,rd:'fin',w:{spd:0,pow:.6,tec:.4},about:'グライドのリズムからリリース。'});
+defEv({id:'DT',name:'円盤投',sec:'投てき',eng:'field',unit:'m',Te:68.5,kind:'throw',tries:6,rd:'fin',w:{spd:0,pow:.5,tec:.5},about:'回転のリズムを刻んでリリース。'});
+defEv({id:'HT',name:'ハンマー投',sec:'投てき',eng:'field',unit:'m',Te:81.5,kind:'throw',tries:6,rd:'fin',w:{spd:0,pow:.5,tec:.5},about:'回転がだんだん速くなる。'});
+defEv({id:'JT',name:'やり投',sec:'投てき',eng:'field',unit:'m',Te:89.0,kind:'throw',tries:6,rd:'fin',w:{spd:.3,pow:.4,tec:.3},about:'助走から、最後の1拍でリリース。'});
+// 混成（十種・七種）
+const COMBO_PTS={ // [A,B,C,track?]
+  '100m':[25.4347,18,1.81,1],'400m':[1.53775,82,1.81,1],'110mH':[5.74352,28.5,1.92,1],'1500m':[0.03768,480,1.85,1],
+  '100mH':[9.23076,26.7,1.835,1],'200m':[4.99087,42.5,1.81,1],'800m':[0.11193,254,1.88,1],
+  'LJ':[0.14354,220,1.4,0],'SP':[51.39,1.5,1.05,0],'HJ':[0.8465,75,1.42,0],'DT':[12.91,4,1.1,0],'PV':[0.2797,100,1.35,0],'JT':[10.14,7,1.08,0]};
+const COMBO_PTS_HEP={'LJ':[0.188807,210,1.41,0],'SP':[56.0211,1.5,1.05,0],'HJ':[1.84523,75,1.348,0],'JT':[15.9803,3.8,1.04,0]};
+const DEC_LIST=[['100m',10.45],['LJ',8.05],['SP',16.6],['HJ',2.10],['400m',46.8],['110mH',13.85],['DT',51.0],['PV',5.35],['JT',72.0],['1500m',252]];
+const HEP_LIST=[['100mH',13.1],['HJ',1.90],['SP',15.0],['200m',22.9],['LJ',6.75],['JT',49.0],['800m',130]];
+defEv({id:'decathlon',name:'十種競技',sec:'混成',eng:'combo',unit:'pt',Te:8800,rd:'fin',list:DEC_LIST,hep:false,about:'10種目の合計得点。上位3位で解放。'});
+defEv({id:'heptathlon',name:'七種競技',sec:'混成',eng:'combo',unit:'pt',Te:6900,rd:'fin',list:HEP_LIST,hep:true,about:'女子の7種目。100mハードルからやり投まで。'});
+const SECTIONS=['短距離','中長距離','ロード','跳躍','投てき','混成'];
+
+// 混成競技の中に出てくる各種目（本種目の設定を借りて、記録の基準だけ変える）
+const _subCache={};
+function subEvent(comboEv,idx){
+  const key=comboEv.id+'#'+idx; if(_subCache[key]) return _subCache[key];
+  const [bid,te]=comboEv.list[idx], base=EVMAP[bid];
+  const o=Object.assign({},base,{id:comboEv.id+'_'+bid,Te:te,sub:true,rd:'fin',tries:base.kind==='horiz'||base.kind==='throw'?3:base.tries,baseId:bid,comboName:base.name});
+  if(base.eng==='phys'){ o.k=1; o.fixedK=false; }
+  calibrate(o); _subCache[key]=o; return o;
+}
+function comboPoints(comboEv,bid,val){
+  const tab=(comboEv.hep&&COMBO_PTS_HEP[bid])||COMBO_PTS[bid]; if(!tab) return 0;
+  const [A,B,C,track]=tab; let d;
+  if(track) d=B-val; else { const m=(bid==='HJ'||bid==='PV'||bid==='LJ')?val*100:val; d=m-B; }
+  return d>0?Math.floor(A*Math.pow(d,C)):0;
+}
+
+// ---- 育成：能力 -> パラメータ -------------------------------------------------
+const newStats=()=>({spd:0,acc:0,sta:0,pow:0,tec:0});
+const STAT_INFO=[
+  {k:'spd',name:'最高速',desc:'走る速さの上限。短距離の速度・助走・スパート（体力の予備）に効く。',use:'短距離/跳躍/中長距離'},
+  {k:'acc',name:'加速',desc:'スタート後の伸び。タップ走で最高速に乗るまでが速くなる。',use:'タップ走（短距離系）'},
+  {k:'sta',name:'持久力',desc:'後半の失速を抑える。ペース配分走では巡航できる速さ（臨界速度）が上がる。',use:'200m以上のすべて'},
+  {k:'pow',name:'パワー',desc:'跳ぶ・投げる力。跳躍と投てきの記録の上限が上がる。',use:'跳躍/投てき'},
+  {k:'tec',name:'技術',desc:'無駄のない動き。跳躍と投てきの記録の上限が上がる。',use:'跳躍/投てき'}];
+const physVc=(ev,st)=>ev.k*(10+(ev.span||0.12)*st.spd), physAc=st=>0.75+0.02*st.acc, physFd=(ev,st)=>1-(ev.fdk||0.03)*st.sta;
+function physFadeBase(ev,x){ const lx=ev.leg?x%ev.leg:x; return lx>ev.fadeFrom?(lx-ev.fadeFrom)*ev.fadeRate:0; }
+const periodOf=(v,ev)=>Math.max(0.50,Math.min(0.9,5.6/Math.max(v,3)))*(ev.pm||1);
+function physGateXs(ev){
+  const g=[];
+  if(ev.hurdle){ for(let i=0;i<ev.hurdle.n;i++) g.push(ev.hurdle.first+i*ev.hurdle.gap-1.8); }
+  if(ev.baton){ for(let L=1;L<=3;L++) g.push(L*ev.leg-2.2); }
+  return g.sort((a,b)=>a-b);
+}
+// 理論値＝「全部PERFECTで押し続けたとき」（パワーが貯まるまでの立ち上がり・ハードル/受け渡しも含む／風なし・反応0.15秒・DIPあり）
+function idealPhys(ev,st){
+  let v=0,x=0,t=0.15,p=0.45; const dt=0.005, vc=physVc(ev,st), ac=physAc(st), fd=physFd(ev,st), gates=physGateXs(ev); let gi=0;
+  let beatT=t+periodOf(0,ev);
+  while(x<ev.D){
+    let tg=vc*p; const f=physFadeBase(ev,x); if(f>0) tg*=1-f*fd;
+    if(v<tg) v=Math.min(tg,v+(2+7*(1-v/13))*dt*ac); else v=Math.max(tg,v-3*dt);
+    x+=v*dt; t+=dt;
+    if(gi<gates.length&&x>=gates[gi]-5){ if(x>=gates[gi]){ p=Math.min(1,p+GAIN.P); gi++; beatT=t+periodOf(v,ev)*0.5; } }
+    else if(x<ev.D-3.5&&t>=beatT){ p=Math.min(1,p+GAIN.P); beatT+=periodOf(v,ev); }
+  }
+  return t-0.05;
+}
+const ALLMAX=()=>({spd:MAXLV,acc:MAXLV,sta:MAXLV,pow:MAXLV,tec:MAXLV});
+const distA=st=>0.65*st.sta/MAXLV+0.35*st.spd/MAXLV;
+function distParams(ev,st){
+  const n=ev.legs||1, A=distA(st), T=ev.Te*0.995*(1.19-0.19*A);
+  const Wp=ev.W20*(0.45+0.55*st.spd/MAXLV), Dl=ev.D/n;
+  const CS=n*(Dl-Wp)/(T-1.2);
+  return {T,W:Wp,CS,n,Dl,pmax:ev.D/ev.Te*(ev.walk?1.12:1.22),pmin:ev.D/ev.Te*0.5,lift:ev.walk?CS*1.05:0};
+}
+function fieldA(ev,st){ const w=ev.w; return w.spd*st.spd/MAXLV+w.pow*st.pow/MAXLV+w.tec*st.tec/MAXLV; }
+const idealField=(ev,st)=>ev.Te*1.005*(0.815+0.185*fieldA(ev,st));
+function idealOf(ev,st){
+  if(ev.eng==='phys') return idealPhys(ev,st);
+  if(ev.eng==='dist') return distParams(ev,st).T;
+  if(ev.eng==='field') return idealField(ev,st);
+  let tot=0; for(let i=0;i<ev.list.length;i++){ const se=subEvent(ev,i); tot+=comboPoints(ev,se.baseId,idealOf(se,st)); } return tot;
+}
+function calibrate(ev){   // タップ走：k(速度係数)とspan(最高速Lvの効き)を、Lv20=優勝記録の0.5%増し／Lv0=優勝記録+17%になるよう合わせる
+  if(ev.eng!=='phys') return ev;
+  if(ev.fixedK){ ev.k=1; ev.span=0.12; return ev; }
+  const mx=ALLMAX(), z=newStats(), goal=ev.Te*0.995;
+  const fitK=()=>{ let lo=0.3,hi=2.2; for(let i=0;i<30;i++){ ev.k=(lo+hi)/2; if(idealPhys(ev,mx)>goal) lo=ev.k; else hi=ev.k; } ev.k=(lo+hi)/2; };
+  let lo=0.01,hi=0.2;
+  for(let i=0;i<16;i++){ ev.span=(lo+hi)/2; fitK(); if(idealPhys(ev,z)/ev.Te>1.17) hi=ev.span; else lo=ev.span; }
+  ev.span=(lo+hi)/2; fitK(); return ev;
+}
+EVS.forEach(e=>{ if(e.eng==='phys') calibrate(e); });
+
+// ---- 表示 -----------------------------------------------------------------
+function fmtTime(t){
+  if(t==null||!isFinite(t)) return '--.--';
+  if(t<60) return t.toFixed(2);
+  if(t<3600){ const m=Math.floor(t/60), s=t-m*60; return m+':'+(s<10?'0':'')+s.toFixed(2); }
+  const h=Math.floor(t/3600), m=Math.floor((t-h*3600)/60), s=Math.floor(t-h*3600-m*60);
+  return h+':'+(m<10?'0':'')+m+':'+(s<10?'0':'')+s;
+}
+function fmtVal(ev,v,short){
+  if(v==null||!isFinite(v)) return ev.unit==='s'?'--.--':'--';
+  if(ev.unit==='s') return fmtTime(v)+(short?'':'');
+  if(ev.unit==='pt') return Math.round(v)+'点';
+  return v.toFixed(2)+(short?'':'m');
+}
+const better=(ev,a,b)=>b==null||(ev.dir<0?a<b:a>b);
+const lineVal=(ev,t)=>ev.dir<0?ev.Te*(1+tierGap(t)):ev.Te*(1-tierGap(t));
+
+// ---- 相手選手の生成 -----------------------------------------------------------
+function makeOpponents(ev,tier,left,names,spreads){
+  // 返り値: 7人分 {name, target(最終記録の目標), react, tau, a(ペース型), look は呼び出し側}
+  const out=[]; spreads=spreads||shuffle([0,1,2,3,4,5,6].map(j=>j/6*0.055));
+  for(let k=0;k<7;k++){
+    const g=tierGap(tier)+spreads[k]+0.018*left+(Math.random()-.5)*0.012;
+    const target=ev.dir<0?ev.Te*(1+g):ev.Te*(1-g);
+    out.push({name:names[k],target,sb:ev.dir<0?target*(1+Math.random()*0.012-0.002):target*(1-Math.random()*0.012+0.002),
+      spread:spreads[k],react:0.13+Math.random()*0.07,tau:1.05+Math.random()*0.25,a:(Math.random()*0.035-0.012)});
+  }
+  return out;
+}
+// 相手の位置（時刻tのとき）。finT は目標タイム
+function oppPos(ev,r,t){
+  const T=r.target, tt=t-r.react;
+  if(tt<=0) return 0;
+  const span=T-r.react;
+  if(ev.eng==='phys'){
+    const vmax=ev.D/(span-r.tau*(1-Math.exp(-span/r.tau)));
+    if(tt<=span) return vmax*(tt-r.tau*(1-Math.exp(-tt/r.tau)));
+    return ev.D+(tt-span)*Math.max(1.5,vmax*0.6);
+  }
+  const u=tt/span;
+  if(u>=1) return ev.D+(tt-span)*Math.max(1.5,ev.D/span*0.7);
+  const a=ev.walk?r.a*0.4:r.a;
+  return ev.D*(u+a*Math.sin(Math.PI*u));
+}
+// 跳躍・投てきの相手の結果（各試技の記録。0はファウル）
+function oppAttempts(ev,target,n){
+  const base=target*0.985, arr=[];
+  for(let i=0;i<n;i++) arr.push(Math.random()<0.14?0:base*(1+gauss()*0.022*0.6*2));
+  return arr;
+}
+// 走高跳・棒高跳の相手：バーを順に挑戦
+function barList(ev){
+  const id=ev.baseId||ev.id, out=[]; const hi=ev.Te*1.06; let h=Math.round(ev.Te*0.72*100)/100;
+  const step=id==='PV'?(x=>x<ev.Te*0.85?0.15:x<ev.Te*0.93?0.10:0.05):(x=>x<ev.Te*0.85?0.05:x<ev.Te*0.92?0.03:0.02);
+  while(h<=hi+1e-9){ out.push(Math.round(h*100)/100); h+=step(h); }
+  return out;
+}
+function startBarIndex(ev,st,bars){ const t=0.8*idealField(ev,st); let i=0; while(i<bars.length-1&&bars[i+1]<=t) i++; return i; }
+function oppVert(ev,cap,bars){
+  let best=0,fails=0,total=0;
+  for(const b of bars){
+    let ok=false;
+    for(let a=0;a<3;a++){
+      const p=1/(1+Math.exp((b-cap)/(0.012*ev.Te)));
+      if(Math.random()<p){ ok=true; break; } fails++; total++;
+      if(fails>=3) break;
+    }
+    if(ok){ best=b; fails=0; } else break;
+  }
+  return {best,total};
+}
+// 試技のタイミング列（秒）。kind別のリング構成
+function seqSpec(ev){
+  const id=ev.baseId||ev.id;
+  const S={
+    LJ:{run:7,p0:.52,p1:.40,after:[['take','踏切',.42,'ang']]},
+    TJ:{run:6,p0:.52,p1:.40,after:[['take','ホップ',.42],['step','ステップ',.55],['jump','ジャンプ',.6,'ang']]},
+    HJ:{run:5,p0:.55,p1:.45,after:[['take','踏切',.45,'ang']]},
+    PV:{run:7,p0:.55,p1:.42,after:[['take','ポール突き',.45,'pv']]},
+    SP:{run:3,p0:.55,p1:.45,after:[['rel','リリース',.5,'ang']]},
+    DT:{run:4,p0:.55,p1:.42,after:[['rel','リリース',.45,'ang']]},
+    HT:{run:5,p0:.62,p1:.36,after:[['rel','リリース',.4,'ang']]},
+    JT:{run:6,p0:.5,p1:.38,after:[['rel','リリース',.4,'ang']]}}[id];
+  const rings=[]; let t=1.2;                    // 最初のリングは1.2秒後
+  for(let i=0;i<S.run;i++){ rings.push({k:'run',t,label:'助走'}); t+=S.p0+(S.p1-S.p0)*(i+1)/S.run; }
+  // 最後のrunリング後の間隔は after の最初の値に置き換える
+  t=rings[rings.length-1].t;
+  S.after.forEach(a=>{ t+=a[2]; rings.push({k:a[0],t,label:a[1],hold:a[3]||null}); });
+  return rings;
+}
+// 判定結果から記録を計算。res={runScore(0-1), q:[判定の配列(special)], foul}
+const QF={P:1,G:0.985,O:0.95,M:0.9};
+// 長押しで決める角度：最適角とその判定（±2°=P ±4.5°=G ±8°=O）
+const ANG_OPT={LJ:22,TJ:18,HJ:48,SP:38,DT:35,HT:44,JT:34}, ANG_RATE=30, ANG_MAX=75;
+const angFactor=d=>Math.max(0.35,1-0.0012*d*d);     // 目安からのずれ：5°→−3%、10°→−12%、20°→−48%
+const angGrade=d=>{ d=Math.abs(d); return d<=2?'P':d<=4.5?'G':d<=8?'O':'M'; };
+const PV_UP=1.05;   // 棒高跳：ポールを突いてから最高点（離す時）までの秒数
+function fieldPerf(ev,st,res){
+  if(res.foul) return 0;
+  let f=0.86+0.14*res.runScore;
+  for(const g of res.q){ f*=QF[g]; }
+  return idealField(ev,st)*f;
+}
+
+// ---- ペース配分走（臨界速度モデル）---------------------------------------------
+// W=「予備体力」(m)。速度が臨界速度CSを超えた分だけ減り、下回ると少し回復する。0になると失速。
+function distInit(ev,st){ const P=distParams(ev,st); return {x:0,v:0,W:P.W,pace:0,t:0,P,leg:0,ex:false,lift:0,cards:0,dq:false,draft:false}; }
+function distGuide(s){        // ゴールで予備体力がちょうど0になるペース（目安）
+  const P=s.P, remLeg=P.Dl*(s.leg+1)-s.x;
+  let rem=P.Dl*P.n-s.x; // 全体の残り
+  // 区間内で使える予備体力だけを見る（リレーは区間ごとに回復する）
+  const r=Math.max(1,remLeg), W=Math.max(0,s.W);
+  const need=(P.n>1&&s.leg<P.n-1)?P.Dl:r;      // 次区間以降は全力で走れる前提なので、いまの区間で配分
+  if(r<=W) return P.pmax;
+  return clamp(P.CS*r/(r-W),P.pmin,P.pmax);
+}
+function distStep(s,dt){
+  const P=s.P;
+  let pc=clamp(s.pace,P.pmin,P.pmax);
+  if(s.ex) pc=Math.min(pc,P.CS*0.86);
+  s.v+=(pc-s.v)*Math.min(1,dt/1.2);
+  const ve=s.v*(s.draft?0.94:1);
+  if(ve>P.CS) s.W-=(ve-P.CS)*dt; else s.W=Math.min(P.W,s.W+(P.CS-ve)*0.35*dt);
+  s.W=Math.max(-120,s.W);
+  if(s.W<=0) s.ex=true; else if(s.ex&&s.W>0.12*P.W) s.ex=false;
+  if(P.lift){ if(s.v>P.lift) s.lift+=(s.v-P.lift)/P.lift*dt*0.9; else s.lift=Math.max(0,s.lift-dt*0.05);
+    if(s.lift>=1){ s.lift=0; s.cards++; if(s.cards>=3) s.dq=true; } }
+  const old=s.x; s.x+=s.v*dt; s.t+=dt;
+  if(P.n>1){ const lg=Math.min(P.n-1,Math.floor(s.x/P.Dl)); if(lg>s.leg){ s.leg=lg; s.W=P.W; s.ex=false; } }
+  return old;
+}
+
+function lineValOf(ev,t){   // その大会の優勝ラインの目安（混成は得点の合計）
+  if(ev.eng!=='combo') return lineVal(ev,t);
+  let tot=0; for(let i=0;i<ev.list.length;i++){ const se=subEvent(ev,i); tot+=comboPoints(ev,se.baseId,lineVal(se,t)); } return tot;
+}
+const costOf=lv=>8+2*lv;
+
+// ===== 10-core.js : 画面・保存・育成・音・描画の土台 =====
+const $=id=>document.getElementById(id);
+const cv=$('cv'), ctx=cv.getContext('2d'), rc=$('rc'), rx=rc.getContext('2d');
+const callEl=$('call'), padEl=$('pad'), stageEl=$('stage');
+const JERSEY=['#3f7fd9','#e8e8e8','#2fa36b','#ffb547','#d24a3c','#8a5cd6','#1fb3c0','#e27a2e'];
+const ENGS={};                                   // 競技エンジン {update,tap,down,up,key,drawStage,drawPad,board}
+let S=null, RUN=null, confetti=[];
+
+// ---- 保存（旧100m版のデータも引き継ぐ）
+let SAVE={ev:{},st:newStats(),tp:0,gear:{shoe:0,uni:0},spons:[]};
+(function loadSave(){
+  try{
+    const s4=JSON.parse(localStorage.getItem('s100-save4')||'null');
+    if(s4&&s4.ev){ SAVE.ev=s4.ev; Object.assign(SAVE.st,s4.st||{}); SAVE.tp=+s4.tp||0; if(s4.gear) SAVE.gear=Object.assign({shoe:0,uni:0},s4.gear); if(Array.isArray(s4.spons)) SAVE.spons=s4.spons; return; }
+    const s3=JSON.parse(localStorage.getItem('s100-save3')||'null');
+    if(s3&&s3.pb){ SAVE.ev['100m']={pb:s3.pb,pos:s3.pos||{}}; Object.assign(SAVE.st,s3.st||{}); SAVE.tp=+s3.tp||0; }
+  }catch(e){}
+})();
+// ---- 用具とスポンサー：大きな大会で初めて優勝すると契約 → 用具が良くなり記録が伸びる
+const SPONSORS=[
+  {tier:2,slot:'shoe',lv:1,co:'風切スポーツ',item:'KAZEKIRI ライト（スパイク）'},
+  {tier:3,slot:'uni', lv:1,co:'ソラテック',  item:'SORA レーシングユニフォーム'},
+  {tier:4,slot:'shoe',lv:2,co:'風切スポーツ',item:'KAZEKIRI プロ カーボン'},
+  {tier:5,slot:'uni', lv:2,co:'ソラテック',  item:'SORA エアロスーツ'},
+  {tier:6,slot:'shoe',lv:3,co:'雷鳴アスレチック',item:'RAIMEI エリート（カーボンプレート）'},
+  {tier:7,slot:'uni', lv:3,co:'雷鳴アスレチック',item:'RAIMEI 五輪モデル'}];
+const GEAR_NAME={shoe:['支給スパイク','KAZEKIRI ライト','KAZEKIRI プロ カーボン','RAIMEI エリート'],uni:['クラブのユニフォーム','SORA レーシング','SORA エアロスーツ','RAIMEI 五輪モデル']};
+const GEAR_SHOE=0.006, GEAR_UNI=0.003;       // 1段ごと：シューズ+0.6%、ユニフォーム+0.3%（速さ・距離）
+const gearF=k=>1+(GEAR_SHOE*(SAVE.gear.shoe||0)+GEAR_UNI*(SAVE.gear.uni||0))*(k==='vert'?0.6:1);
+function sponsorCheck(tier){   // 優勝した大会の格で新しい契約があれば返す
+  const sp=SPONSORS.find(s=>s.tier===tier); if(!sp||SAVE.spons.includes(tier)) return null;
+  SAVE.spons.push(tier); if((SAVE.gear[sp.slot]||0)<sp.lv) SAVE.gear[sp.slot]=sp.lv; persist(); return sp;
+}
+function gearHTML(){
+  const g=SAVE.gear, pct=v=>(v*100).toFixed(1)+'%';
+  const next=SPONSORS.find(s=>!SAVE.spons.includes(s.tier));
+  const row=(lbl,slot,per)=>`<div class="grow"><span class="gk">${lbl}</span><b>${GEAR_NAME[slot][g[slot]||0]}</b><span class="gv">${(g[slot]||0)?'+'+pct(per*(g[slot]||0)):'±0%'}</span></div>`;
+  return `<div class="thead"><b>用具・スポンサー</b><span>記録 +${pct(gearF()-1)}</span></div>
+    ${row('シューズ','shoe',GEAR_SHOE)}${row('ユニフォーム','uni',GEAR_UNI)}
+    <div class="tdesc">${SAVE.spons.length?'契約中：'+[...new Set(SPONSORS.filter(s=>SAVE.spons.includes(s.tier)).map(s=>s.co))].join('・'):'まだスポンサーはいません。'}<br>
+    ${next?`次の契約：<b>${TIERS[next.tier].name}</b>のどれかの種目で優勝 → ${next.co}「${next.item}」`:'すべてのスポンサーと契約済み！'}<br>
+    <small>効果は速さ・距離に掛かります（高さの種目は6割）。走る・跳ぶ・投げる全種目に有効。</small></div>`;
+}
+function persist(){ try{ localStorage.setItem('s100-save4',JSON.stringify(SAVE)); }catch(e){} }
+const evSave=id=>SAVE.ev[id]||(SAVE.ev[id]={pb:{},pos:{}});
+const unlocked=(ev,i)=>i===0||(evSave(ev.id).pos[i-1]!=null&&evSave(ev.id).pos[i-1]<=3);
+const unlockCount=ev=>{ let n=0; for(let i=0;i<TIERS.length;i++) if(unlocked(ev,i)) n++; return n; };
+function fmtDist(m){ return m>=1000?(m%1000?(m/1000).toFixed(1):(m/1000))+'km':m+'m'; }
+
+// ---- 画面遷移
+let howFrom='scMenu';
+const SCREENS=['scMenu','scTiers','scRace','scHow','scTrain'];
+function go(id){
+  SCREENS.forEach(s=>$(s).hidden=s!==id);
+  if(id==='scRace') requestAnimationFrame(resize);
+  if(id==='scMenu') renderMenu();
+  if(id==='scTiers') renderTiers();
+  if(id==='scTrain') renderTrain();
+  if(id==='scHow') $('howBody').innerHTML=howHTML();
+}
+const busy=()=>S&&['marks','set','run','ready','seq','fly'].includes(S.phase)&&!$('scRace').hidden;
+function renderMenu(){
+  $('tpMenu').textContent=SAVE.tp?' '+SAVE.tp:'';
+  let h='';
+  SECTIONS.forEach(sec=>{
+    h+=`<div class="sec">${sec}</div>`;
+    EVS.filter(e=>e.sec===sec).forEach(ev=>{
+      const sv=evSave(ev.id), dots=TIERS.map((_,i)=>{ const p=sv.pos[i]; return `<i class="${p&&p<=3?'g'+p:unlocked(ev,i)?'op':''}"></i>`; }).join('');
+      h+=`<button class="evc" data-id="${ev.id}"><span><span class="nm">${ev.name}</span><span class="ab" style="display:block">${ev.about}</span><span class="dots">${dots}</span></span><span class="rt">${unlockCount(ev)}/${TIERS.length}</span></button>`;
+    });
+  });
+  $('events').innerHTML=h;
+}
+$('events').addEventListener('click',e=>{ const b=e.target.closest('.evc'); if(b) openEvent(b.dataset.id); });
+function openEvent(id){ RUN={ev:EVMAP[id]}; go('scTiers'); }
+function renderTiers(){
+  const ev=RUN.ev, sv=evSave(ev.id), ideal=idealOf(ev,SAVE.st);
+  $('tiTag').textContent=ev.sec; $('tiName').textContent=ev.name; $('tiAbout').textContent=ev.about;
+  $('cups').innerHTML=TIERS.map((c,i)=>{
+    const ok=unlocked(ev,i), pos=sv.pos[i], best=sv.pb[i];
+    const medal=pos&&pos<=3?`<span class="medal m${pos}"></span>`:'';
+    const rds=ev.eng==='combo'?[`${ev.list.length}種目`]:roundsOfTier(ev,i).map(r=>r.name);
+    const chips=rds.map((n,k)=>`<span class="chip${k===rds.length-1&&ev.eng!=='combo'?' fin':''}">${n}</span>`).join('');
+    const line=lineValOf(ev,i), good=ev.dir<0?ideal<line:ideal>line;
+    const right=ok?`${medal}${best!=null?fmtVal(ev,best):'--'}<small>優勝ライン ${fmtVal(ev,line)}<br>理論値 <span style="color:${good?'var(--good)':'var(--bad)'}">${fmtVal(ev,ideal)}</span></small>`:`<small>前の大会の決勝で<br>3位以内</small>`;
+    return `<button class="cup${ok?' open':''}" data-i="${i}" ${ok?'':'disabled'}><span class="no">${i+1}</span><span><span class="nm">${c.name}</span><span class="chips">${chips}</span></span><span class="rt s">${right}</span></button>`;
+  }).join('');
+}
+$('cups').addEventListener('click',e=>{ const b=e.target.closest('.cup'); if(!b||b.disabled) return; openTier(+b.dataset.i); });
+$('tiersBack').onclick=()=>go('scMenu');
+$('toHow1').onclick=()=>{ howFrom='scMenu'; go('scHow'); };
+$('toHow3').onclick=()=>{ howFrom='scTiers'; go('scHow'); };
+$('toHow2').onclick=()=>{ if(busy()) return; howFrom='scRace'; go('scHow'); };
+$('howBack').onclick=()=>go(howFrom);
+$('toMenu').onclick=()=>{ if(busy()) return; S=null; go('scTiers'); };
+$('iBack').onclick=()=>{ S=null; go('scTiers'); };
+$('toTrain').onclick=()=>{ trainEv=RUN&&RUN.ev?RUN.ev:EVMAP['100m']; go('scTrain'); };
+$('trainBack').onclick=()=>go('scMenu');
+
+// ---- 育成
+let trainEv=EVMAP['100m'];
+function gainText(ev,cur,nx){
+  const d=ev.dir<0?cur-nx:nx-cur;
+  if(d<=1e-9) return '<span style="color:var(--muted)">この種目には効果なし</span>';
+  if(ev.unit==='s') return `次のLv → <em>理論タイム −${d>=60?fmtTime(d):d.toFixed(2)}秒</em>`;
+  if(ev.unit==='pt') return `次のLv → <em>理論得点 +${Math.round(d)}点</em>`;
+  return `次のLv → <em>理論記録 +${d.toFixed(2)}m</em>`;
+}
+function renderTrain(){
+  const ev=trainEv, cur=idealOf(ev,SAVE.st);
+  $('tSel').innerHTML=EVS.map(e=>`<option value="${e.id}"${e===ev?' selected':''}>${e.name}</option>`).join('');
+  $('tIdealLbl').textContent=ev.name+'：いまの理論値（ミスなし）'; $('tIdeal').textContent=fmtVal(ev,cur);
+  $('tTP').textContent=SAVE.tp; $('tTPbar').textContent=SAVE.tp+' TP';
+  $('tIdealSub').textContent='全Lv0 '+fmtVal(ev,idealOf(ev,newStats()))+' → 全Lv20 '+fmtVal(ev,idealOf(ev,ALLMAX()));
+  $('tGear').innerHTML=gearHTML();
+  $('tList').innerHTML=STAT_INFO.map(d=>{
+    const lv=SAVE.st[d.k], maxed=lv>=MAXLV, cost=costOf(lv);
+    const nx=Object.assign({},SAVE.st,{[d.k]:Math.min(MAXLV,lv+1)});
+    return `<div class="tcard"><div class="thead"><b>${d.name}</b><span>Lv ${lv} / ${MAXLV}</span></div>
+      <div class="tdesc">${d.desc}<br>効く種目：${d.use}</div><div class="tbar"><i style="width:${lv/MAXLV*100}%"></i></div>
+      <div class="tnow"><span>${maxed?'MAX':''}</span><span>${maxed?'':gainText(ev,cur,idealOf(ev,nx))}</span></div>
+      <button class="tup" data-k="${d.k}" ${maxed||SAVE.tp<cost?'disabled':''}>${maxed?'最大まで強化済み':`強化する（${cost} TP）`}</button></div>`;
+  }).join('');
+}
+$('tSel').onchange=e=>{ trainEv=EVMAP[e.target.value]; renderTrain(); };
+$('tList').addEventListener('click',e=>{ const b=e.target.closest('.tup'); if(!b||b.disabled) return;
+  const k=b.dataset.k, lv=SAVE.st[k], c=costOf(lv); if(lv>=MAXLV||SAVE.tp<c) return;
+  SAVE.tp-=c; SAVE.st[k]=lv+1; persist(); beep(784,.08,.04,'triangle'); renderTrain(); });
+
+// ---- 遊び方
+function howHTML(){
+  const sec=(h,b)=>`<section><h3>${h}</h3>${b}</section>`;
+  return sec('基本',`<ul><li>種目を選び、大会（市民大会→オリンピック）に挑戦。<b>決勝で3位以内</b>に入ると、その種目の次の大会が解放されます。</li>
+    <li>走る・跳ぶ・投げるとTPがたまります（負けても貯まる）。「育成」で能力を上げましょう。種目ごとの<b>理論値</b>は、ミスなしで操作できたときの目安です。</li>
+    <li>記録・解放状況はこの端末のブラウザに保存されます。PCでは <kbd>Space</kbd> がタップ（跳躍・投てきの長押しもSpaceを押したまま）、ペース走は <kbd>↑</kbd> でペースUP。</li></ul>`)
+  +sec('短距離・ハードル・リレー（タップ走）',`<ol><li><b>「用意」の間に触るとフライング。</b>「ドン！」で最初のタップ（反応時間）。</li>
+    <li>あとは<b>足が着地する瞬間にタップ</b>。縮む円が枠に重なったらタップ。PERFECT(±0.08秒)・GOOD(±0.15)・OK(±0.22)で加速、押し逃しはMISSで減速。</li>
+    <li>ゴール前3.5mからは「DIP」。ゴールぎりぎりでタップすると最大−0.05秒。</li>
+    <li><b>ハードル</b>：台の手前で「JUMP」の円が出ます。重なったらタップ。ずれると速度ダウン、ミスで接触（大きく減速）。</li>
+    <li><b>4×100m</b>：区間の終わりに「BATON」の円。受け渡しがずれると失速します。</li>
+    <li>追い風+2.0m/s超は「追い風参考」（100m・200m・ハードルのみ風あり）。</li></ol>`)
+  +sec('中長距離・マラソン・競歩（ペース配分）',`<ul><li>画面左側を<b>タップするとペースUP</b>。<b>放っておくとペースは落ちていく</b>ので、メーターを緑の帯（▼目安）に保つよう、落ちてきたらタップを繰り返します。</li>
+    <li>走るほど<b>予備体力</b>が減ります（臨界速度を超えた分だけ）。0になると大きく失速。<b>▼目安</b>の位置に合わせると、ゴールでちょうど体力が尽きる最適ペースです。</li>
+    <li>前の選手のすぐ後ろ（2m以内）では<b>ドラフト</b>で体力の減りが約6%小さくなります。</li>
+    <li>3000m障害：1周に<b>障害4台と水濠1つ</b>。手前で出る「JUMP」に合わせて右側をタップ。外すと接触して失速・体力を失います。</li>
+    <li>4×400m：区間が替わるたびに体力が回復します。交代の手前で「BATON」を右側でタップ（ずれると体力と速度を損ないます）。</li>
+    <li>20km競歩：目安より速く歩くと「浮き」が溜まり、<b>警告3枚でDQ（失格）</b>。</li>
+    <li>レースは時間が圧縮されて進みます（画面の時計は本番の時間）。</li></ul>`)
+  +sec('跳躍（走幅・三段・走高・棒高）',`<ul><li>「位置につく」→タップで試技開始。縮む円に合わせて<b>リズムよくタップ</b>（助走）。最後の「踏切」で外すとファウル（バー種目は失敗）。</li>
+    <li>助走は画面がスクロールします。縮む円に合わせたタップが良いほど速く走れます。</li>
+    <li><b>走幅跳・走高跳</b>：「踏切」の円で押し、<b>押したままにすると角度の数値が上がり、離すと角度が決まります</b>（目安：走幅22°・走高48°）。目安から離れるほど記録が落ちます（5°で−3%、10°で−12%、20°で−48%）。走高跳は背面跳びでバーを越えます。</li>
+    <li><b>踏切線</b>（走幅・三段）：円が閉じる瞬間＝つま先が踏切線の上。<b>遅れて押すと線を越えてファウル</b>、早く押すと手前で踏切った分だけ記録が短くなります（記録は踏切線から測ります）。</li>
+    <li><b>三段跳</b>：ホップ・ステップはタップ、最後の「ジャンプ」で押したまま角度を決めます（目安18°）。</li>
+    <li><b>棒高跳</b>：長いポールを持って助走し、ボックスに自動で突きます。突いた瞬間に押して<b>押し続けると体が上昇</b>。バーの上に来た瞬間に離すと越えます。早すぎても遅すぎても失敗。</li>
+    <li>走幅・三段は6回の試技で最高記録を競います。走高・棒高は<b>3回連続で失敗すると終了</b>。「パス」でバーを飛ばせます。</li></ul>`)
+  +sec('投てき（砲丸・円盤・ハンマー・やり）',`<ul><li>最初のリズムを刻む（グライド・回転・助走）と投てきパワーがたまります。最後の「リリース」で押し、<b>押したままにすると角度が上がり、離した角度で投げます</b>（目安：砲丸38°・円盤35°・ハンマー44°・やり34°）。</li>
+    <li>角度が目安から離れるほど距離が落ちます（跳躍と同じ割合）。</li>
+    <li><b>風</b>：円盤とやりは風を受けます。円盤は向かい風で伸び、最適角は下がります（1m/sで約1.5°）。やりは追い風で少し伸び、最適角は上がります（1m/sで約1°）。メーターの目安は風の分だけずれて表示されます。</li>
+    <li>砲丸はT字→かがむ→グライド、円盤は予備スイング2回→1回転半、ハンマーは頭上の予備旋回2回→回転3回、やりは助走→クロスステップ→投げ。「リリース」を押し逃すとファウルです。6回の試技の最高記録で順位が決まります。</li></ul>`)
+  +sec('混成（十種・七種）',`<ul><li>各種目の結果が国際式の<b>得点</b>になり、合計点で順位を競います。各種目の後に途中順位が出ます。</li></ul>`)
+  +sec('用具・スポンサー',`<ul><li>県大会・全国大会・日本選手権・アジア大会・世界陸上・オリンピックのどれかの種目で<b>初めて優勝</b>すると、スポンサーが付いて良いシューズ・ユニフォームが手に入ります。</li>
+    <li>シューズは1段ごとに+0.6%、ユニフォームは+0.3%（速さ・距離。高さの種目は6割）。最大で+2.7%。育成画面で確認できます。</li></ul>`)
+  +sec('育成',`<ul><li>最高速・加速・持久力・パワー・技術の5つ。種目によって効く能力が違います。</li>
+    <li>各大会の「理論値」が優勝ラインに届かないうちは、操作が完璧でも勝てません。</li></ul>`);
+}
+
+// ---- サイズ
+let W=0,H=0,PW=0,PH=0,DPR=1;
+function resize(){
+  DPR=Math.min(2,window.devicePixelRatio||1);
+  W=stageEl.clientWidth; H=stageEl.clientHeight; PW=padEl.clientWidth; PH=padEl.clientHeight;
+  if(!W||!H) return;
+  cv.width=W*DPR; cv.height=H*DPR; ctx.setTransform(DPR,0,0,DPR,0,0);
+  rc.width=PW*DPR; rc.height=PH*DPR; rx.setTransform(DPR,0,0,DPR,0,0);
+}
+window.addEventListener('resize',resize);
+if(window.ResizeObserver){ const ro=new ResizeObserver(resize); ro.observe(stageEl); ro.observe(padEl); }
+
+// ---- 音
+let AC=null;
+function audio(){ if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } if(AC&&AC.state==='suspended') AC.resume(); }
+function pistol(){ if(!AC) return; const len=AC.sampleRate*0.35, buf=AC.createBuffer(1,len,AC.sampleRate), d=buf.getChannelData(0);
+  for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/len,4);
+  const s=AC.createBufferSource(), g=AC.createGain(); g.gain.value=.5; s.buffer=buf; s.connect(g).connect(AC.destination); s.start(); }
+function beep(f,dur,vol,type,delay){ if(!AC) return; const o=AC.createOscillator(), g=AC.createGain(), t0=AC.currentTime+(delay||0);
+  o.frequency.value=f; o.type=type||'square'; g.gain.setValueAtTime(vol||.05,t0); g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
+  o.connect(g).connect(AC.destination); o.start(t0); o.stop(t0+dur); }
+function fanfare(){ [523,659,784,1047].forEach((f,i)=>beep(f,.25,.05,'triangle',i*0.12)); }
+function buzz(ms){ try{ navigator.vibrate&&navigator.vibrate(ms); }catch(e){} }
+function show(t,c){ callEl.textContent=t; callEl.className='call'+(c?' '+c:''); }
+
+// ---- 入力（エンジンへ振り分け）
+const ptr=e=>{ const r=padEl.getBoundingClientRect(); return {x:(e.clientX-r.left)/Math.max(1,r.width),y:(e.clientY-r.top)/Math.max(1,r.height)}; };
+function canInput(){ return S&&!$('scRace').hidden&&$('intro').hidden&&$('result').hidden; }
+padEl.addEventListener('pointerdown',e=>{ e.preventDefault(); if(!canInput()) return; audio(); try{ padEl.setPointerCapture(e.pointerId); }catch(_){} const g=ENGS[S.kind]; g.down?g.down(ptr(e)):g.tap(ptr(e)); });
+const pup=e=>{ if(canInput()&&ENGS[S.kind].up) ENGS[S.kind].up(ptr(e)); };
+padEl.addEventListener('pointerup',pup); padEl.addEventListener('pointercancel',pup);
+padEl.addEventListener('contextmenu',e=>e.preventDefault());
+window.addEventListener('keydown',e=>{ if($('scRace').hidden||!canInput()) return;
+  if(e.code==='Space'){ e.preventDefault(); if(!e.repeat){ const g=ENGS[S.kind]; g.tap({x:0.5,y:0.5,key:true}); } }
+  else if((e.code==='ArrowUp'||e.code==='ArrowDown')&&ENGS[S.kind].key){ e.preventDefault(); ENGS[S.kind].key(e.code,true); } });
+window.addEventListener('keyup',e=>{ if(S&&ENGS[S.kind]&&ENGS[S.kind].key&&(e.code==='ArrowUp'||e.code==='ArrowDown')) ENGS[S.kind].key(e.code,false);
+  if(e.code==='Space'&&S&&ENGS[S.kind]&&ENGS[S.kind].up&&canInput()) ENGS[S.kind].up({key:true}); });
+
+// ---- 共通の描画部品（観客席・照明）
+function drawStands(standH,shift,t,cheer){
+  const g=ctx.createLinearGradient(0,0,0,standH); g.addColorStop(0,'#08111a'); g.addColorStop(1,'#1a2c3b');
+  ctx.fillStyle=g; ctx.fillRect(-10,-10,W+20,standH+10);
+  const lo=shift*0.12, sp=240;
+  for(let i=Math.floor(lo/sp)-1;i<(lo+W)/sp+1;i++){
+    const x=i*sp-lo+60, ty=standH*0.16;
+    const glow=ctx.createRadialGradient(x,ty,2,x,ty,standH*0.9);
+    glow.addColorStop(0,'rgba(223,234,245,.35)'); glow.addColorStop(1,'rgba(223,234,245,0)');
+    ctx.fillStyle=glow; ctx.fillRect(x-standH,ty-standH,standH*2,standH*2);
+    ctx.fillStyle='#dfeaf5'; ctx.fillRect(x-11,ty-4,22,8);
+    ctx.fillStyle='rgba(223,234,245,.5)'; for(let j=-2;j<=2;j++) ctx.fillRect(x+j*4.4-1,ty-3,2,6);
+  }
+  const off=shift*0.35, cw=7;
+  ctx.fillStyle='#0e1a24'; ctx.fillRect(-10,standH*0.36,W+20,standH*0.64);
+  for(let row=0;row<4;row++){
+    const y=standH*0.44+row*standH*0.13;
+    for(let i=Math.floor(off/cw)-1;i<(off+W)/cw+1;i++){
+      const r=rnd(i*7+row*1000); if(r<0.12) continue;
+      const jump=cheer&&rnd(i+row)>.55?Math.abs(Math.sin(t*9+i))*2.2:0;
+      ctx.fillStyle=`hsl(${Math.floor(r*360)},${30+r*30}%,${34+row*7}%)`;
+      ctx.beginPath(); ctx.arc(i*cw-off+(row%2)*3,y-jump,2.4,0,7); ctx.fill();
+    }
+  }
+  ctx.fillStyle='#223544'; ctx.fillRect(-10,standH-7,W+20,7);
+}
+
+// ---- タップ面の共通部品
+function roundRect(x,y,w,h,r){ rx.beginPath(); rx.moveTo(x+r,y); rx.arcTo(x+w,y,x+w,y+h,r); rx.arcTo(x+w,y+h,x,y+h,r); rx.arcTo(x,y+h,x,y,r); rx.arcTo(x,y,x+w,y,r); rx.closePath(); }
+function ring(cx,cy,R,hot,col){
+  rx.save();
+  const c=col||'#ffb547';
+  if(hot){ rx.shadowColor=c; rx.shadowBlur=24; }
+  rx.lineWidth=hot?8:4; rx.strokeStyle=hot?c:'rgba(238,242,244,.85)';
+  rx.beginPath(); rx.arc(cx,cy,R,0,7); rx.stroke(); rx.restore();
+  if(hot){ rx.globalAlpha=.16; rx.fillStyle=c; rx.beginPath(); rx.arc(cx,cy,R,0,7); rx.fill(); rx.globalAlpha=1; }
+}
+function foot(x,y,s,left,col){
+  rx.save(); rx.translate(x,y); if(left) rx.scale(-1,1); rx.fillStyle=col; rx.globalAlpha=.9;
+  rx.beginPath(); rx.ellipse(0,s*0.15,s*0.26,s*0.42,0.12,0,7); rx.fill();
+  rx.beginPath(); rx.ellipse(s*0.05,-s*0.42,s*0.2,s*0.17,0.1,0,7); rx.fill();
+  [[-.2,-.66,.07],[-.04,-.72,.075],[.12,-.7,.068],[.25,-.63,.06],[.34,-.52,.05]].forEach(([a,b,c])=>{ rx.beginPath(); rx.arc(s*a,s*b,s*c,0,7); rx.fill(); });
+  rx.restore();
+}
+function padBase(){
+  const w=PW,h=PH,cx=w/2,cy=h/2-6,R=Math.min(w,h)*0.27;
+  const bg=rx.createRadialGradient(cx,cy,R*0.3,cx,cy,Math.max(w,h)*0.7);
+  bg.addColorStop(0,S&&S.flash>0?'#26394a':'#1a2b3a'); bg.addColorStop(1,'#101b25');
+  rx.fillStyle=bg; rx.fillRect(0,0,w,h);
+  rx.textAlign='center'; rx.textBaseline='middle';
+  return {w,h,cx,cy,R};
+}
+const DISP='"Dela Gothic One", sans-serif', DOT='"DotGothic16", monospace';
+function padLabel(t,x,y,size,col,font){ rx.fillStyle=col; rx.font=`${size}px ${font||DOT}`; rx.fillText(t,x,y); }
+
+// ---- メインループ
+let last=performance.now();
+function loop(now){ const dt=Math.min(0.05,(now-last)/1000); last=now;
+  if(!$('scRace').hidden&&S&&ENGS[S.kind]){ const g=ENGS[S.kind]; g.update(dt); g.drawStage(dt); g.drawPad(); }
+  requestAnimationFrame(loop); }
+
+// ---- トラック描画
+function rnd(n){ const x=Math.sin(n*127.1)*43758.5453; return x-Math.floor(x); }
+function limb(x,y,a,l){ return [x+Math.sin(a)*l,y+Math.cos(a)*l]; }
+function line(a,b,w){ ctx.lineWidth=w; ctx.beginPath(); ctx.moveTo(a[0],a[1]); ctx.lineTo(b[0],b[1]); ctx.stroke(); }
+// ===== ランナー描画 =====
+const SKINS=['#e0b08a','#c68a5e','#8d5a3b','#6b4028','#f0c9a4','#a86f48','#553222','#d9a57a'];
+const HAIRS=['#1a1410','#2b1d14','#0e0c0b','#4a2e1a','#1a1410'];
+const SHOES=['#39ff88','#ff4fa3','#ffffff','#ffd23f','#4fc3ff','#ff7a3d'];
+const HAIRS_F=['#1a1410','#2b1d14','#4a2e1a','#6b3a1e','#b07a35','#0e0c0b'];
+const RIBBON=['#ff4fa3','#ffd23f','#4fc3ff','#ffffff','#b07cff','#ff7a3d'];
+function makeLook(i, me, fem){
+  const L={ skin: me?'#d9a57a':SKINS[Math.floor(Math.random()*SKINS.length)],
+    hair: HAIRS[Math.floor(Math.random()*HAIRS.length)], style: me?0:Math.floor(Math.random()*4),
+    shoe: me?'#ffffff':SHOES[Math.floor(Math.random()*SHOES.length)],
+    shorts: Math.random()<.5?'#161b22':null, stripe: Math.random()<.5?'#ffffff':'#111820' };
+  if(me&&typeof SAVE!=='undefined'&&SAVE.gear){ const sh=SAVE.gear.shoe||0, un=SAVE.gear.uni||0;
+    L.shoe=['#ffffff','#39ff88','#ff7a3d','#ffd23f'][sh]; if(un){ L.logo=['','#5fd0e6','#b07cff','#ffd23f'][un]; L.stripe=L.logo; L.shorts='#10151c'; } }
+  if(fem){ L.fem=1; L.hair=me?'#2b1d14':HAIRS_F[Math.floor(Math.random()*HAIRS_F.length)];
+    L.ribbon=me?'#ff4fa3':RIBBON[Math.floor(Math.random()*RIBBON.length)]; }
+  return L;
+}
+const cycLen=v=>Math.max(1.6,0.42*v);                // 1周期(2歩)で進む距離
+function shade(hex,f){ const n=parseInt(hex.slice(1),16); let r=n>>16,g=n>>8&255,b=n&255;
+  if(f<0){ r*=1+f; g*=1+f; b*=1+f; } else { r+=(255-r)*f; g+=(255-g)*f; b+=(255-b)*f; }
+  return `rgb(${r|0},${g|0},${b|0})`; }
+// 脚のキーフレーム: [位相, 太もも角(度,前+), 膝の曲げ(度)]
+const LEG=[[0,22,18],[.12,2,32],[.24,-32,14],[.40,-20,118],[.55,28,132],[.70,70,98],[.85,56,38],[1,22,18]];
+const FOOT=[[0,1.72],[.12,1.57],[.24,0.72],[.40,-0.35],[.55,0.3],[.70,1.0],[.85,1.5],[1,1.72]];
+// 競歩：接地脚は膝を伸ばし、両足が同時に浮かない。腕は肘を曲げて大きく振る
+const WLEG=[[0,24,2],[.25,2,0],[.5,-22,6],[.62,-14,40],[.75,6,58],[.88,22,22],[1,24,2]];
+const WFOOT=[[0,2.05],[.12,1.6],[.42,1.35],[.52,0.85],[.7,1.25],[.9,1.85],[1,2.05]];
+function kf(tab,p,cols){ p=((p%1)+1)%1; let i=0; while(i<tab.length-2&&p>tab[i+1][0]) i++;
+  const A=tab[i],B=tab[i+1], t=(p-A[0])/(B[0]-A[0]), e=t*t*(3-2*t); return cols.map(c=>A[c]+(B[c]-A[c])*e); }
+const D2R=Math.PI/180;
+function cap(a,b,r1,r2,col){
+  const dx=b[0]-a[0], dy=b[1]-a[1], L=Math.hypot(dx,dy)||1, nx=-dy/L, ny=dx/L;
+  ctx.fillStyle=col; ctx.beginPath();
+  ctx.moveTo(a[0]+nx*r1,a[1]+ny*r1); ctx.lineTo(b[0]+nx*r2,b[1]+ny*r2); ctx.lineTo(b[0]-nx*r2,b[1]-ny*r2); ctx.lineTo(a[0]-nx*r1,a[1]-ny*r1); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.arc(a[0],a[1],r1,0,7); ctx.fill(); ctx.beginPath(); ctx.arc(b[0],b[1],r2,0,7); ctx.fill();
+}
+function runPose(r,px,fy,h,cyc){
+  let lean;
+  if(r.x<25) lean=0.2+0.55*Math.pow(1-r.x/25,1.6); else lean=0.2;
+  if(r.fin!==null) lean=0.12;
+  if(r.me&&S.dip!==null&&r.x<101.5) lean=0.85;
+  if(r.walk) lean=0.1;
+  const TH=h*0.25, SH=h*0.25;
+  const jp=r.jp, bj=jp?Math.min(1,Math.sin(Math.PI*clamp(jp.ph,0,1))*1.8):0;   // ハードル跳越の度合い 0〜1
+  if(bj>0) lean=lean*(1-bj)+0.8*bj;
+  const legs=[[cyc,false],[cyc+0.5,true]].map(([p,far])=>{
+    let [t,k]=kf(r.walk?WLEG:LEG,p,[1,2]), [fa]=kf(r.walk?WFOOT:FOOT,p,[1]);
+    if(bj>0){ const T=far?[50,130,1.9]:[88,8,2.3]; t+=(T[0]-t)*bj; k+=(T[1]-k)*bj; fa+=(T[2]-fa)*bj; }
+    const a1=t*D2R, a2=a1-k*D2R;
+    const kn=limb(0,0,a1,TH), an=limb(kn[0],kn[1],a2,SH);
+    return {p,far,kn,an,fa};
+  });
+  const drop=Math.max(...legs.map(l=>l.an[1]+Math.cos(l.fa)*h*0.03+h*0.035));
+  const hip=[px, fy-drop*(1-bj)-(bj>0?(jp.hF+0.075)*h*bj*(0.93+0.07*Math.sin(Math.PI*jp.ph))*jp.sc:0)];
+  legs.forEach(l=>{ l.kn=[hip[0]+l.kn[0],hip[1]+l.kn[1]]; l.an=[hip[0]+l.an[0],hip[1]+l.an[1]]; });
+  const sh=limb(hip[0],hip[1],Math.PI-lean,h*0.33), head=limb(sh[0],sh[1],Math.PI-lean*0.75,h*0.125);
+  const arms=legs.map(l=>{
+    const c=Math.cos(2*Math.PI*(l.p-0.7));
+    let ua=-0.95*c + lean*0.35, fl=1.5-0.38*c;   // 同側の脚と逆に振る
+    if(r.walk){ ua=-0.75*c+0.1; fl=1.75-0.15*c; }
+    if(bj>0){ const T=l.far?[1.35,0.7]:[-0.9,1.2]; ua+=(T[0]-ua)*bj; fl+=(T[1]-fl)*bj; }
+    const el=limb(sh[0],sh[1],ua,h*0.165), hd=limb(el[0],el[1],ua+fl,h*0.15);
+    return {far:l.far, sh, el, hd};
+  });
+  return {hip,sh,head,legs,arms,lean};
+}
+function crouchPose(px,fy,h,set){
+  const P=(x,y)=>[px+x*h, fy+y*h];
+  const hip=set?P(0,-0.41):P(-0.04,-0.27), sh=set?P(0.28,-0.34):P(0.27,-0.30), head=set?P(0.37,-0.30):P(0.36,-0.27);
+  const legs=[
+    {far:true,  kn:set?P(0.13,-0.22):P(0.13,-0.12), an:P(-0.03,-0.035), fa:1.2},
+    {far:false, kn:set?P(-0.1,-0.22):P(-0.11,-0.035), an:P(-0.30,-0.05), fa:0.95}];
+  const arms=[{far:true,sh,el:P(0.285,-0.17),hd:P(0.3,-0.015)},{far:false,sh,el:P(0.3,-0.17),hd:P(0.315,-0.015)}];
+  return {hip,sh,head,legs,arms,lean:1.3,crouch:true};
+}
+function paint(J,r,h,alpha){
+  const L=r.look, skin=L.skin, skinF=shade(skin,-0.3), jer=JERSEY[r.lane-1], jerF=shade(jer,-0.3);
+  const shorts=L.shorts||shade(jer,-0.45), shortsF=shade(shorts,-0.25);
+  ctx.globalAlpha=alpha;
+  const fem=!!L.fem, lw=fem?0.92:1;
+  const leg=(l,far)=>{
+    const c=far?skinF:skin, sc=far?shade(L.shoe,-0.3):L.shoe;
+    cap(J.hip,l.kn,h*0.062*lw,h*0.046*lw,c);
+    cap(l.kn,l.an,h*0.045*lw,h*0.026*lw,c);
+    const mid=[J.hip[0]+(l.kn[0]-J.hip[0])*(fem?0.3:0.45), J.hip[1]+(l.kn[1]-J.hip[1])*(fem?0.3:0.45)];
+    cap(J.hip,mid,h*0.07,h*0.058,far?shortsF:shorts);         // ショーツ
+    const toe=limb(l.an[0],l.an[1],l.fa,h*0.1), heel=limb(l.an[0],l.an[1],l.fa+Math.PI,h*0.018);
+    cap(heel,toe,h*0.026,h*0.018,sc);                           // スパイク
+  };
+  const arm=(a,far)=>{ const c=far?skinF:skin; cap(a.sh,a.el,h*0.036*lw,h*0.03*lw,c); cap(a.el,a.hd,h*0.03,h*0.024,c); ctx.fillStyle=c; ctx.beginPath(); ctx.arc(a.hd[0],a.hd[1],h*0.03,0,7); ctx.fill(); };
+  J.arms.filter(a=>a.far).forEach(a=>arm(a,true));
+  J.legs.filter(l=>l.far).forEach(l=>leg(l,true));
+  // 胴体
+  const d=[J.sh[0]-J.hip[0],J.sh[1]-J.hip[1]], Ld=Math.hypot(d[0],d[1]), u=[d[0]/Ld,d[1]/Ld], n=[-u[1],u[0]];
+  const f=n[0]>0?1:-1;                                        // 前側（右向き）
+  const P=(base,k,off)=>[base[0]+u[0]*k+n[0]*off*f, base[1]+u[1]*k+n[1]*off*f];
+  if(!fem){
+  ctx.fillStyle=jer; ctx.beginPath();
+  const a1=P(J.hip,0,h*0.06), a2=P(J.hip,Ld*0.55,h*0.085), a3=P(J.hip,Ld*0.98,h*0.07), a4=P(J.hip,Ld*1.02,-h*0.055), a5=P(J.hip,Ld*0.4,-h*0.07), a6=P(J.hip,0,-h*0.06);
+  ctx.moveTo(...a1); ctx.quadraticCurveTo(...a2,...a3); ctx.lineTo(...a4); ctx.quadraticCurveTo(...a5,...a6); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle=L.stripe; ctx.globalAlpha=alpha*0.8; ctx.lineWidth=Math.max(1,h*0.014);
+  ctx.beginPath(); ctx.moveTo(...P(J.hip,Ld*0.05,-h*0.01)); ctx.lineTo(...P(J.hip,Ld*0.95,-h*0.005)); ctx.stroke(); ctx.globalAlpha=alpha;
+  // ゼッケン
+  ctx.save(); ctx.translate(...P(J.hip,Ld*0.52,h*0.03)); ctx.rotate(Math.atan2(u[1],u[0])+Math.PI/2);
+  ctx.fillStyle='rgba(255,255,255,.95)'; ctx.fillRect(-h*0.04,-h*0.045,h*0.08,h*0.07);
+  ctx.fillStyle='#111'; ctx.fillRect(-h*0.02,-h*0.02,h*0.04,h*0.02); ctx.restore();
+  if(L.logo){ ctx.save(); ctx.translate(...P(J.hip,Ld*0.82,h*0.035)); ctx.rotate(Math.atan2(u[1],u[0])+Math.PI/2); ctx.fillStyle=L.logo; ctx.beginPath(); ctx.moveTo(-h*0.025,h*0.01); ctx.lineTo(h*0.025,-h*0.012); ctx.lineTo(h*0.01,h*0.012); ctx.closePath(); ctx.fill(); ctx.restore(); }
+  } else {
+    // 女子：胴は肌色、上はクロップトップ、くびれと胸のラインを付ける
+    ctx.fillStyle=skin; ctx.beginPath();
+    ctx.moveTo(...P(J.hip,0,h*0.058)); ctx.quadraticCurveTo(...P(J.hip,Ld*0.3,h*0.045),...P(J.hip,Ld*0.98,h*0.06));
+    ctx.lineTo(...P(J.hip,Ld*1.02,-h*0.05)); ctx.quadraticCurveTo(...P(J.hip,Ld*0.4,-h*0.06),...P(J.hip,0,-h*0.062)); ctx.closePath(); ctx.fill();
+    ctx.fillStyle=jer; ctx.beginPath();
+    ctx.moveTo(...P(J.hip,Ld*0.5,h*0.05)); ctx.quadraticCurveTo(...P(J.hip,Ld*0.72,h*0.112),...P(J.hip,Ld*0.99,h*0.062));
+    ctx.lineTo(...P(J.hip,Ld*1.02,-h*0.052)); ctx.quadraticCurveTo(...P(J.hip,Ld*0.75,-h*0.07),...P(J.hip,Ld*0.5,-h*0.056)); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle=L.stripe; ctx.globalAlpha=alpha*0.8; ctx.lineWidth=Math.max(1,h*0.012);
+    ctx.beginPath(); ctx.moveTo(...P(J.hip,Ld*0.52,h*0.045)); ctx.quadraticCurveTo(...P(J.hip,Ld*0.7,h*0.1),...P(J.hip,Ld*0.97,h*0.057)); ctx.stroke(); ctx.globalAlpha=alpha;
+    ctx.save(); ctx.translate(...P(J.hip,Ld*0.3,h*0.0)); ctx.rotate(Math.atan2(u[1],u[0])+Math.PI/2);
+    ctx.fillStyle='rgba(255,255,255,.95)'; ctx.fillRect(-h*0.032,-h*0.026,h*0.064,h*0.05); ctx.fillStyle='#111'; ctx.fillRect(-h*0.015,-h*0.012,h*0.03,h*0.014); ctx.restore();
+    if(L.logo){ ctx.save(); ctx.translate(...P(J.hip,Ld*0.8,h*0.035)); ctx.rotate(Math.atan2(u[1],u[0])+Math.PI/2); ctx.fillStyle=L.logo; ctx.beginPath(); ctx.moveTo(-h*0.022,h*0.01); ctx.lineTo(h*0.022,-h*0.01); ctx.lineTo(h*0.008,h*0.01); ctx.closePath(); ctx.fill(); ctx.restore(); }
+  }
+  // 首と頭
+  cap(J.sh,J.head,h*0.03*lw,h*0.028*lw,skin);
+  const hr=h*0.082, hx=0, hy=0; ctx.save(); ctx.translate(J.head[0],J.head[1]); if(J.hrot) ctx.rotate(J.hrot);
+  if(fem){
+    // 髪（後ろ側）：ポニーテール／お団子／三つ編み
+    const sway=Math.sin((r.cyc||0)*Math.PI*2*2)*0.28, spd=Math.min(1,(r.v||0)/11);
+    const bp=[hx-hr*0.72,hy-hr*0.38];
+    ctx.fillStyle=L.hair;
+    if(L.style===1){ ctx.beginPath(); ctx.arc(hx-hr*0.5,hy-hr*1.05,hr*0.46,0,7); ctx.fill(); }
+    else if(L.style===2){ let p=bp; for(let q=1;q<=4;q++){ const np=[bp[0]-hr*(0.45*q)*(0.5+spd*0.7), bp[1]+hr*(0.5*q)*(1-spd*0.5)+Math.sin((r.cyc||0)*12.5+q)*hr*0.12*q*spd]; cap(p,np,hr*(0.3-q*0.03),hr*(0.3-(q+1)*0.03),L.hair); p=np; } }
+    else { const len=hr*(1.7+1.4*spd), ex=bp[0]-len*Math.cos(sway)*(0.55+0.45*spd), ey=bp[1]+hr*0.5*(1-spd*0.6)+len*Math.sin(sway)*0.6+len*0.45*(1-spd);
+      const mid=[(bp[0]+ex)/2-hr*0.1,(bp[1]+ey)/2-hr*0.1]; cap(bp,mid,hr*0.3,hr*0.27,L.hair); cap(mid,[ex,ey],hr*0.27,hr*0.08,L.hair); }
+  }
+  if(L.style===2&&!fem){ ctx.fillStyle=L.hair; ctx.beginPath(); ctx.arc(hx-hr*0.2,hy-hr*0.25,hr*1.28,0,7); ctx.fill(); }
+  ctx.fillStyle=skin; ctx.beginPath(); ctx.ellipse(hx,hy,hr*0.95,hr,0,0,7); ctx.fill();
+  ctx.fillStyle=skin; ctx.beginPath(); ctx.moveTo(hx+hr*0.6,hy+hr*0.2); ctx.lineTo(hx+hr*1.12,hy+hr*0.38); ctx.lineTo(hx+hr*0.55,hy+hr*0.62); ctx.fill(); // 鼻〜あご
+  ctx.fillStyle=L.hair;
+  if(fem){
+    ctx.beginPath(); ctx.arc(hx-hr*0.06,hy-hr*0.1,hr*1.02,Math.PI*0.8,Math.PI*2.08); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(hx-hr*0.75,hy+hr*0.12,hr*0.32,hr*0.62,0.2,0,7); ctx.fill();         // 後れ毛・サイド
+    if(L.style===3){ ctx.strokeStyle=L.ribbon; ctx.lineWidth=hr*0.26; ctx.beginPath(); ctx.arc(hx,hy-hr*0.02,hr*0.95,Math.PI*1.1,Math.PI*1.9); ctx.stroke(); }
+    ctx.fillStyle=L.ribbon; ctx.beginPath(); ctx.arc(hx-hr*0.74,hy-hr*0.38,hr*0.22,0,7); ctx.fill();
+  }
+  else if(L.style===0){ ctx.beginPath(); ctx.arc(hx-hr*0.08,hy-hr*0.12,hr*1.0,Math.PI*0.85,Math.PI*2.05); ctx.fill(); }
+  else if(L.style===1){ ctx.globalAlpha=alpha*0.7; ctx.beginPath(); ctx.arc(hx-hr*0.05,hy-hr*0.05,hr*0.98,Math.PI*0.95,Math.PI*2.0); ctx.fill(); ctx.globalAlpha=alpha; }
+  else if(L.style===3){ ctx.beginPath(); ctx.arc(hx-hr*0.08,hy-hr*0.12,hr*1.0,Math.PI*0.85,Math.PI*2.05); ctx.fill();
+    ctx.strokeStyle=L.shoe; ctx.lineWidth=hr*0.28; ctx.beginPath(); ctx.arc(hx,hy,hr*0.93,Math.PI*1.05,Math.PI*1.95); ctx.stroke(); }
+  ctx.fillStyle='#111'; ctx.beginPath(); ctx.arc(hx+hr*0.5,hy-hr*0.1,Math.max(0.8,hr*0.1),0,7); ctx.fill();  // 目
+  if(fem){ ctx.strokeStyle='#111'; ctx.lineWidth=Math.max(0.8,hr*0.09); ctx.beginPath(); ctx.moveTo(hx+hr*0.5,hy-hr*0.17); ctx.lineTo(hx+hr*0.78,hy-hr*0.3); ctx.stroke();   // まつ毛
+    ctx.fillStyle='#e0506a'; ctx.beginPath(); ctx.ellipse(hx+hr*0.78,hy+hr*0.5,hr*0.17,hr*0.09,0.3,0,7); ctx.fill(); }
+  ctx.fillStyle=shade(skin,-0.2); ctx.beginPath(); ctx.arc(hx-hr*0.1,hy+hr*0.05,hr*0.2,0,7); ctx.fill(); // 耳
+  ctx.globalAlpha=alpha*0.25; ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(hx-hr*0.2,hy-hr*0.45,hr*0.45,0,7); ctx.fill(); ctx.globalAlpha=alpha;
+  ctx.restore();
+  J.legs.filter(l=>!l.far).forEach(l=>leg(l,false));
+  J.arms.filter(a=>!a.far).forEach(a=>arm(a,false));
+  { const na=J.arms.find(a=>!a.far), fa=J.arms.find(a=>a.far); r.hand=na?na.hd:null; r.handF=fa?fa.hd:null; }
+  ctx.globalAlpha=1;
+}
+function drawRunner(r,px,fy,h){
+  ctx.fillStyle='rgba(0,0,0,.3)'; ctx.beginPath(); ctx.ellipse(px+h*0.02,fy+1,h*0.24,h*0.045,0,0,7); ctx.fill();
+  if(r.x<=0.01){
+    // スターティングブロック（リレーの待機走者は無し）
+    if(!r.noBlock){ ctx.fillStyle='#5b6670';
+    [[-0.34,-0.07],[-0.09,-0.06]].forEach(([x,t])=>{ ctx.beginPath(); ctx.moveTo(px+x*h,fy); ctx.lineTo(px+(x+0.06)*h,fy); ctx.lineTo(px+x*h,fy+t*h); ctx.fill(); }); }
+    paint(crouchPose(px,fy,h,S.phase==='set'),r,h,1);
+  } else {
+    if(r.v>7.5&&!r.jp){ for(let k=2;k>=1;k--){ const off=k*r.v*0.022*(W/22); paint(runPose(r,px-off,fy,h,r.cyc-k*0.06),r,h,0.07); } }
+    paint(runPose(r,px,fy,h,r.cyc),r,h,1);
+  }
+  if(r.me){ const J=r.x<=0.01?null:1; const ty=fy-h*(J?1.02:0.55); ctx.fillStyle='#ffb547'; ctx.beginPath(); ctx.moveTo(px-6,ty-9); ctx.lineTo(px+6,ty-9); ctx.lineTo(px,ty); ctx.fill(); }
+}
+
+// ===== 任意ポーズ（跳躍・投てき用） =====
+// P: {tr:胴の前傾(度), nk:首, legs:[{t:太もも(胴基準・度),k:膝の曲げ,f:足首}, …](手前,奥), arms:[{u:上腕(胴基準),e:肘}|{to:[x,y]}]}
+function mkPose(hip,P,h){
+  const tr=(P.tr||0)*D2R, TH=h*0.25, SH=h*0.25;
+  const sh=limb(hip[0],hip[1],Math.PI-tr,h*0.33), head=limb(sh[0],sh[1],Math.PI-tr-(P.nk||0)*D2R,h*0.125);
+  const legs=P.legs.map((L,i)=>{ const a1=L.t*D2R-tr, a2=a1-L.k*D2R; const kn=limb(hip[0],hip[1],a1,TH), an=limb(kn[0],kn[1],a2,SH); return {far:i===1,kn,an,fa:a2+1.55+(L.f||0)*D2R}; });
+  const arms=P.arms.map((A,i)=>{ if(A.to) return armTo(sh,A.to,i===1,h,A.b); const ua=A.u*D2R-tr; const el=limb(sh[0],sh[1],ua,h*0.165), hd=limb(el[0],el[1],ua+A.e*D2R,h*0.15); return {far:i===1,sh,el,hd}; });
+  return {hip,sh,head,legs,arms,lean:tr,hrot:tr+(P.nk||0)*D2R};
+}
+// 肩から目標点へ腕を伸ばす（2関節IK）。届かなければ伸ばしきり
+function armTo(sh,to,far,h,bend){
+  const l1=h*0.165,l2=h*0.15, dx=to[0]-sh[0], dy=to[1]-sh[1], d=Math.max(1e-3,Math.min(Math.hypot(dx,dy),l1+l2-0.5)), a=Math.atan2(dy,dx);
+  const c=clamp((l1*l1+d*d-l2*l2)/(2*l1*d),-1,1), b=Math.acos(c)*(bend==null?1:bend);
+  return {far,sh,el:[sh[0]+Math.cos(a+b)*l1,sh[1]+Math.sin(a+b)*l1],hd:[sh[0]+Math.cos(a)*d,sh[1]+Math.sin(a)*d]};
+}
+// 走りの脚はそのまま、胴の傾きだけ変える
+function reTrunk(J,trDeg,h){ const tr=trDeg*D2R; J.sh=limb(J.hip[0],J.hip[1],Math.PI-tr,h*0.33); J.head=limb(J.sh[0],J.sh[1],Math.PI-tr*0.8,h*0.125); J.hrot=tr*0.6; J.lean=tr; J.arms.forEach(a=>a.sh=J.sh); return J; }
+function lerpP(A,B,u){ if(typeof A==='number') return A+((B===undefined?A:B)-A)*u; if(Array.isArray(A)) return A.map((x,i)=>lerpP(x,B?B[i]:x,u)); if(A&&typeof A==='object'){ const o={}; for(const k in A) o[k]=lerpP(A[k],B?B[k]:undefined,u); return o; } return A; }
+function kfPose(K,u){ let i=0; while(i<K.length-2&&u>K[i+1][0]) i++; const a=K[i],b=K[i+1], t=clamp((u-a[0])/Math.max(1e-6,b[0]-a[0]),0,1); return lerpP(a[1],b[1],t*t*(3-2*t)); }
+
+// ===== 20-phys.js : タップ走（100m/200m/400m/ハードル/4×100mリレー） =====
+const dipBonus=(x,D)=>x>=D-0.8?0.05:x>=D-1.7?0.035:0.015;
+const DIPLEN=3.5;
+
+function physCreate(){
+  const ev=RUN.cur, D=ev.D;
+  const wind=(D<=200)?Math.round((Math.random()*3.4-1.1)*10)/10:0;
+  const st={ kind:'phys', ev, D, win:22, mstep:D<=120?10:D<=210?20:50, phase:'idle', t:0, callT:0, setDur:0, wind,
+    runners: RUN.entries.map((e,i)=>({ name:e.name, lane:i+1, me:!!e.me, x:0, v:0, fin:null, rt:null, cyc:Math.random(), look:e.look,
+      target:e.me?0:e.target*(1-wind*0.004), react:e.react||0.15, tau:e.tau||1.1 })),
+    power:0.45, nextBeat:null, prevBeat:0, beats:0, judge:null, judgeT:0, combo:0, maxCombo:0, lastHit:-1, early:0, tickBeat:-1,
+    cnt:{P:0,G:0,O:0,M:0}, gcnt:{P:0,G:0,O:0,M:0}, spl:[], errs:[], t80:null, maxV:0, dip:null, doneAt:null, flash:0, shake:0, photo:0, gates:[], hurdleX:[], zones:[], leg:0, msgT:0 };
+  if(ev.hurdle){ const h=ev.hurdle; for(let i=0;i<h.n;i++){ const hx=h.first+i*h.gap; st.hurdleX.push(hx); st.gates.push({x:hx-1.8,kind:'H',done:false,res:null}); } }
+  if(ev.baton){ for(let L=1;L<=3;L++){ st.gates.push({x:L*ev.leg-2.2,kind:'B',done:false,res:null}); st.zones.push(L*ev.leg); } }
+  return st;
+}
+function physStart(){ S.phase='marks'; S.callT=0; show('位置について',''); }
+const nextGate=()=>S.gates.find(g=>!g.done);
+function physTap(){
+  S.flash=0.12;
+  if(S.phase==='idle'||S.phase==='foul'){ S=physCreate(); physStart(); return; }
+  if(S.phase==='set'){ S.phase='foul'; show('フライング！','foul'); beep(220,.5,.08); buzz(300); return; }
+  if(S.phase!=='run') return;
+  const me=S.runners[ME]; if(me.fin!==null) return;
+  if(me.rt===null){ me.rt=S.t; S.prevBeat=S.t; S.nextBeat=S.t+periodOf(0,S.ev); beep(660,.06,.04); return; }
+  const g=nextGate();
+  if(g&&me.x>=g.x-5){
+    const err=(me.x-g.x)/Math.max(me.v,5), a=Math.abs(err);
+    if(a<=WIN.O){ g.err=err; g.vb=me.v; gateResolve(g,a<=WIN.P?'P':a<=WIN.G?'G':'O'); } else if(err<0) S.early=0.3;
+    return;
+  }
+  if(me.x>=S.D-DIPLEN){ if(S.dip===null){ S.dip=me.x; beep(990,.12,.05); buzz(40); } return; }
+  if(S.t-S.lastHit<0.12) return;
+  const err=S.t-S.nextBeat, a=Math.abs(err);
+  if(a<=WIN.O){ S.lastHit=S.t; physJudge(a<=WIN.P?'P':a<=WIN.G?'G':'O',err); advanceBeat(); }
+  else if(err<0) S.early=0.3;
+}
+function advanceBeat(){ S.prevBeat=S.nextBeat; S.nextBeat+=periodOf(S.runners[ME].v,S.ev); S.beats++; }
+function physJudge(g,err){
+  if(err!==undefined&&g!=='M') S.errs.push(err);
+  S.cnt[g]++; S.power=clamp(S.power+GAIN[g],0.4,1);
+  if(g==='M'){ S.combo=0; beep(150,.1,.05); buzz(60); }
+  else { S.combo++; S.maxCombo=Math.max(S.maxCombo,S.combo); beep(g==='P'?880:g==='G'?660:520,.05,.04,'triangle'); if(g==='P') buzz(15); }
+  S.judge={g,early:err!==undefined&&g!=='P'&&err<0}; S.judgeT=0.5;
+}
+function say(t,c,ms){ show(t,c); const tok=S; setTimeout(()=>{ if(S===tok&&S.phase==='run') show('',''); },ms||600); }
+function gateResolve(g,jg){
+  const me=S.runners[ME]; g.done=true; g.res=jg; S.gcnt[jg]++; if(jg==='P') S.cnt.P++;
+  if(jg!=='M') S.power=clamp(S.power+GAIN[jg],0.4,1);
+  if(g.kind==='H'){
+    if(jg==='P'){ say('ナイスクリア','go'); beep(880,.06,.04,'triangle'); }
+    else if(jg==='G'){ beep(660,.05,.04,'triangle'); }
+    else if(jg==='O'){ me.v*=0.97; beep(520,.05,.04,'triangle'); }
+    else { me.v*=0.80; S.power=clamp(S.power-0.1,0.4,1); say('接触！','foul'); beep(140,.18,.07); buzz(120); S.shake=0.2; }
+  } else {
+    if(jg==='P'){ say('バトンパス！','go'); beep(990,.08,.05,'triangle'); }
+    else if(jg==='G'){ me.v*=0.99; beep(700,.06,.04,'triangle'); }
+    else if(jg==='O'){ me.v*=0.97; beep(520,.05,.04,'triangle'); }
+    else { me.v*=0.88; say('受け渡しミス','foul'); beep(140,.18,.07); buzz(120); }
+  }
+  S.prevBeat=S.t; S.nextBeat=S.t+periodOf(me.v,S.ev)*0.5; S.lastHit=S.t;
+}
+function physUpdate(dt){
+  if(!S) return;
+  S.flash=Math.max(0,S.flash-dt); S.judgeT=Math.max(0,S.judgeT-dt); S.early=Math.max(0,S.early-dt);
+  S.shake=Math.max(0,S.shake-dt); S.photo=Math.max(0,S.photo-dt);
+  if(S.phase==='marks'){ S.callT+=dt; if(S.callT>1.6){ S.phase='set'; S.callT=0; S.setDur=1.1+Math.random()*1.3; show('用意',''); } physBoard(); return; }
+  if(S.phase==='set'){ S.callT+=dt; if(S.callT>=S.setDur){ S.phase='run'; S.t=0; S.shake=0.25; show('ドン！','go'); pistol(); const tok=S; setTimeout(()=>{ if(S===tok&&S.phase==='run') show('',''); },600); } return; }
+  if(S.phase!=='run') return;
+  const ev=S.ev, D=S.D, me=S.runners[ME];
+  S.t+=dt;
+  const g=nextGate();
+  if(g&&me.fin===null&&me.rt!==null&&me.x-g.x>WIN.O*Math.max(me.v,5)){ g.err=null; g.vb=me.v; gateResolve(g,'M'); }
+  const gAct=!!(g&&!g.done&&me.x>=g.x-5);
+  const active=me.rt!==null&&me.fin===null&&me.x<D-DIPLEN&&!gAct;
+  if(active&&S.t>=S.nextBeat&&S.tickBeat!==S.beats){ S.tickBeat=S.beats; beep(S.beats%2?1200:1000,.035,.035,'sine'); }
+  if(active&&S.t>S.nextBeat+WIN.O){ physJudge('M'); advanceBeat(); }
+  let target=me.rt===null?0:physVc(ev,SAVE.st)*gearF()*S.power*(1+S.wind*0.004);
+  const fb=physFadeBase(ev,me.x); if(fb>0) target*=1-fb*physFd(ev,SAVE.st);
+  if(me.fin===null){ if(me.v<target) me.v=Math.min(target,me.v+(2+7*(1-me.v/13))*dt*physAc(SAVE.st)); else me.v=Math.max(target,me.v-3*dt); }
+  else me.v=Math.max(1.5,me.v-4*dt);
+  const old=me.x; me.x+=me.v*dt;
+  if(ev.leg) S.leg=Math.min(3,Math.floor(me.x/ev.leg));
+  if(active){ const f=Math.min(1,(S.t-S.prevBeat)/Math.max(0.01,S.nextBeat-S.prevBeat)); me.cyc=S.beats+f; }
+  else me.cyc+=me.v*dt/cycLen(me.v);
+  if(me.fin===null&&me.x>=D){ let fin=S.t-dt*(me.x-D)/Math.max(0.001,me.x-old); if(S.dip!==null) fin-=dipBonus(S.dip,D); me.fin=fin; S.photo=0.25; beep(880,.15,.05); }
+  S.maxV=Math.max(S.maxV,me.v);
+  if(me.fin===null){ const q=S.spl.length; if(q<3&&me.x>=D*(q+1)/4) S.spl.push(S.t); if(S.t80===null&&me.x>=D*0.8) S.t80=S.t; }
+  S.gates.forEach(g=>{ if(g.done&&g.vb&&g.va==null&&me.x>=g.x+(g.kind==='H'?5:6)) g.va=me.v; });
+  S.runners.forEach(r=>{
+    if(r.me) return;
+    const o=r.x; r.x=oppPos(ev,r,S.t); r.v=(r.x-o)/dt||0;
+    if(r.fin===null&&S.t>=r.target) r.fin=r.target;
+    r.cyc+=(r.x-o)/cycLen(Math.max(r.v,1));
+  });
+  if((me.fin!==null&&S.runners.every(r=>r.me||r.fin!==null))||S.t>ev.Te*2.5){ if(S.doneAt===null) S.doneAt=S.t; if(S.t-S.doneAt>1.0) physFinish(); }
+  physBoard();
+}
+function physRanking(){ return [...S.runners].sort((a,b)=>{ if(a.fin!==null&&b.fin!==null) return a.fin-b.fin; if(a.fin!==null) return -1; if(b.fin!==null) return 1; return b.x-a.x; }); }
+function physBoard(){
+  const me=S.runners[ME], ev=S.ev;
+  $('kA').textContent='TIME'; $('kB').textContent='km/h'; $('kC').textContent=ev.leg?('POS '+(S.leg+1)+'/4走'):'POS'; $('kD').textContent='BEST';
+  $('bTime').textContent=fmtTime(me.fin!==null?me.fin:(S.phase==='run'?S.t:0));
+  $('bSpeed').textContent=(me.v*3.6).toFixed(1);
+  $('bRank').textContent=S.phase==='run'||S.phase==='done'?(physRanking().indexOf(me)+1):'-';
+  const p=RUN&&evSave(ev.id).pb[RUN.cup]; $('bPB').textContent=p!=null&&!ev.sub?fmtTime(p):'--.--';
+}
+function physFinish(){
+  S.phase='done'; show('','');
+  const me=S.runners[ME], rk=physRanking();
+  const pm=physMetrics();
+  concludeRace({
+    rk:rk.map(r=>({name:r.name,me:r.me,lane:r.lane,val:r.fin})), legal:S.wind<=2.0,
+    cnt:S.cnt, metrics:pm.m, mini:`<span>反応<b>${me.rt!==null?me.rt.toFixed(3):'-'}</b></span><span>PERFECT<b>${S.cnt.P}</b></span><span>MISS<b>${S.cnt.M}</b></span>`
+      +(S.gates.length?`<span>${S.ev.baton?'受け渡し':'ハードル'}<b>${S.gcnt.P+S.gcnt.G+S.gcnt.O}/${S.gates.length}</b></span>`:'')
+      +`<span>DIP<b>${S.dip!==null?'−'+dipBonus(S.dip,S.D).toFixed(3):'なし'}</b></span>`+(S.D<=200?`<span>風<b>${(S.wind>=0?'+':'')+S.wind.toFixed(1)}</b></span>`:'')+pm.html});
+}
+
+// ---- タップ面
+function physPad(){
+  if(!S||!PW) return;
+  const {w,h,cx,cy,R}=padBase(), me=S.runners[ME];
+  if(S.phase==='idle'){ padLabel('TAP TO START',cx,cy,22,'#ffb547'); return; }
+  if(S.phase==='foul'){ padLabel('フライング',cx,cy-14,24,'#ff6b5b',DISP); padLabel('タップでやり直し',cx,cy+18,13,'#8fa2b0'); return; }
+  if(S.phase==='done') return;
+  if(S.phase==='marks'||S.phase==='set'){ padLabel(S.phase==='set'?'触らないで…':'位置について',cx,cy,22,S.phase==='set'?'#ff6b5b':'#8fa2b0',DISP); return; }
+  if(me.fin!==null){ padLabel('FINISH',cx,cy,30,'#ffb547',DISP); return; }
+  if(me.rt===null){ ring(cx,cy,R,true); padLabel('TAP!',cx,cy,34,'#ffb547',DISP); return; }
+  const g=nextGate();
+  if(g&&me.x>=g.x-5){
+    const te=(g.x-me.x)/Math.max(me.v,5), hot=Math.abs(te)<=WIN.P;
+    ring(cx,cy,R,hot,'#5fd0e6');
+    const rr=R+R*1.15*Math.max(0,te)/0.8;
+    if(rr>R+2){ rx.lineWidth=3; rx.strokeStyle='#5fd0e6'; rx.globalAlpha=0.9; rx.beginPath(); rx.arc(cx,cy,rr,0,7); rx.stroke(); rx.globalAlpha=1; }
+    padLabel(g.kind==='H'?'JUMP!':'BATON!',cx,cy,28,'#5fd0e6',DISP);
+  } else if(me.x>=S.D-DIPLEN){ const d=S.dip!==null; padLabel(d?'DIP!':'DIP',cx,cy,46,d?'#6fd39a':'#ffb547',DISP); if(!d) padLabel('ゴールぎりぎりでタップ',cx,cy+h*0.28,12,'#8fa2b0'); return; }
+  else {
+    const per=S.nextBeat-S.prevBeat, inP=Math.abs(S.t-S.nextBeat)<=WIN.P, band=R*1.15*WIN.P/per;
+    rx.lineWidth=band*2; rx.strokeStyle='rgba(255,181,71,.12)'; rx.beginPath(); rx.arc(cx,cy,R,0,7); rx.stroke();
+    ring(cx,cy,R,inP);
+    const rr=R+R*1.15*(S.nextBeat-S.t)/per;
+    if(rr>4){ rx.lineWidth=3; rx.strokeStyle='#ffb547'; rx.globalAlpha=Math.min(1,0.4+(1-(rr-R)/(R*1.2))); rx.beginPath(); rx.arc(cx,cy,rr,0,7); rx.stroke(); rx.globalAlpha=1; }
+    foot(cx-R*0.2,cy+R*0.08,R*0.28,true,'rgba(95,208,230,.35)'); foot(cx+R*0.2,cy-R*0.04,R*0.34,false,'#ffb547');
+  }
+  const gw=w*0.72,gx=cx-gw/2,gy=h-14;
+  rx.fillStyle='rgba(255,255,255,.08)'; roundRect(gx,gy,gw,6,3); rx.fill();
+  const gg=rx.createLinearGradient(gx,0,gx+gw,0); gg.addColorStop(0,'#c24a31'); gg.addColorStop(1,'#ffb547');
+  rx.fillStyle=gg; roundRect(gx,gy,Math.max(6,gw*S.power),6,3); rx.fill();
+  rx.fillStyle='#8fa2b0'; rx.font='10px '+DOT; rx.textAlign='left'; rx.fillText('POWER',gx,gy-9);
+  rx.textAlign='right'; if(S.combo>1){ rx.fillStyle='#fff'; rx.fillText(S.combo+' COMBO',gx+gw,gy-9); }
+  rx.textAlign='center';
+  if(S.judge&&S.judgeT>0){ rx.globalAlpha=Math.min(1,S.judgeT*3); padLabel(JT[S.judge.g],cx,22-(0.5-S.judgeT)*8,20,JC[S.judge.g],DISP);
+    if(S.judge.g!=='P'&&S.judge.g!=='M') padLabel(S.judge.early?'早い':'遅い',cx,44,11,'#8fa2b0'); rx.globalAlpha=1; }
+  if(S.early>0) padLabel('まだ早い',cx,h-36,12,'#8fa2b0');
+}
+ENGS.phys={create:physCreate,start:physStart,update:physUpdate,tap:physTap,drawStage:dt=>drawTrack(dt),drawPad:physPad,board:physBoard};
+
+// ===== 25-track.js : トラック（走る種目）の舞台描画。phys=実寸 / dist=時間圧縮 =====
+function drawTrack(dt){
+  if(!S||!W) return;
+  dt=dt||0.016;
+  const me=S.runners[ME], D=S.D, distMode=S.kind==='dist';
+  const standH=Math.max(52,H*0.24), trackTop=standH, laneH=(H-trackTop-7)/LANES;
+  const pxm=W/S.win, px0=W*(distMode?0.4:0.3);
+  const gs=distMode?S.gs:1;
+  const hb=S.ev.baseId||S.ev.id, hurH=hb==='110mH'?0.59:hb==='100mH'?0.47:0.5;
+  const cam=me.x-px0/pxm;                                  // phys: 実際の位置が基準
+  const X=distMode?(m=>px0+(m-me.x)/gs*pxm):(m=>(m-cam)*pxm);   // 真の距離 -> 画面
+  const sc=distMode?S.vis:cam;                              // 景色の流れ
+  const Xs=m=>(m-sc)*pxm+(distMode?px0:0);                  // 景色（ラインや目盛り）
+  ctx.save();
+  if(S.shake>0) ctx.translate((Math.random()-.5)*5*S.shake*4,(Math.random()-.5)*3*S.shake*4);
+  drawStands(standH,sc*pxm,S.t,S.phase==='run');
+  // 進行バー（全体の何%か）
+  const mx0=12,mx1=W-12,my=9;
+  ctx.fillStyle='rgba(255,255,255,.14)'; ctx.fillRect(mx0,my-1,mx1-mx0,2);
+  ctx.fillStyle='rgba(255,255,255,.5)'; ctx.fillRect(mx1-1,my-5,2,10);
+  if(S.ev.legs||S.ev.leg){ const n=S.ev.legs||(S.ev.leg?D/S.ev.leg:1); for(let L=1;L<n;L++){ ctx.fillStyle='rgba(95,208,230,.5)'; ctx.fillRect(mx0+(mx1-mx0)*L/n-0.5,my-4,1,8); } }
+  S.runners.forEach(r=>{ if(r.me) return; ctx.fillStyle=JERSEY[r.lane-1]; ctx.beginPath(); ctx.arc(mx0+(mx1-mx0)*clamp(r.x/D,0,1),my,3,0,7); ctx.fill(); });
+  ctx.fillStyle='#ffb547'; ctx.beginPath(); ctx.arc(mx0+(mx1-mx0)*clamp(me.x/D,0,1),my,4.5,0,7); ctx.fill();
+  // トラック面
+  const tg=ctx.createLinearGradient(0,trackTop,0,H); tg.addColorStop(0,'#b0432c'); tg.addColorStop(1,'#c9503a');
+  ctx.fillStyle=tg; ctx.fillRect(-10,trackTop,W+20,H-trackTop+10);
+  ctx.fillStyle='rgba(0,0,0,.06)';
+  if(distMode){ const st=2; for(let m=Math.floor((sc-px0/pxm)/st)*st;m<sc+(W-px0)/pxm+st;m+=st) ctx.fillRect(Xs(m),trackTop,1,LANES*laneH); }
+  else for(let m=Math.floor(cam);m<cam+S.win+2;m+=0.5){ ctx.fillRect(X(m),trackTop,1,LANES*laneH); }
+  ctx.fillStyle='#2e6b4a'; ctx.fillRect(-10,H-7,W+20,8);
+  ctx.strokeStyle='rgba(255,255,255,.9)'; ctx.lineWidth=1.3;
+  for(let i=0;i<=LANES;i++){ const y=trackTop+i*laneH; ctx.beginPath(); ctx.moveTo(-10,y); ctx.lineTo(W+10,y); ctx.stroke(); }
+  ctx.fillStyle='rgba(255,181,71,.07)'; ctx.fillRect(-10,trackTop+ME*laneH,W+20,laneH);
+  ctx.textAlign='center';
+  if(distMode){
+    // 景色の目印（ラベル無し）
+    ctx.fillStyle='rgba(255,255,255,.35)';
+    const st=10; for(let m=Math.floor((sc-px0/pxm)/st)*st;m<sc+(W-px0)/pxm+st;m+=st) ctx.fillRect(Xs(m)-1,trackTop,2,LANES*laneH);
+    // スタート／区間／ゴール
+    const lines=[[0,'START','#fff']]; for(let L=1;L<(S.ev.legs||1);L++) lines.push([D/S.ev.legs*L,'EXCHANGE','#5fd0e6']);
+    lines.forEach(([m,tx,col])=>{ const x=X(m); if(x<-40||x>W+40) return; ctx.fillStyle=col; ctx.fillRect(x-2,trackTop,4,LANES*laneH); ctx.font='10px '+DOT; ctx.fillText(tx,x,trackTop-12); });
+    const fx=X(D); if(fx>-60&&fx<W+60){ const sz=laneH/4;
+      for(let yy=0;yy<LANES*4;yy++) for(let xx=0;xx<3;xx++){ ctx.fillStyle=(xx+yy)%2?'#111':'#f4f4f4'; ctx.fillRect(fx+xx*sz-sz*1.5,trackTop+yy*sz,sz,sz); }
+      ctx.fillStyle='#ffb547'; ctx.font='12px '+DISP; ctx.fillText('FINISH',fx,trackTop-12); }
+    (S.waterX||[]).forEach(wx=>{ const x=X(wx); if(x<-120||x>W+120) return; ctx.fillStyle='rgba(60,150,220,.75)'; ctx.fillRect(x,trackTop,pxm*7,LANES*laneH);
+      ctx.fillStyle='#fff'; ctx.font='10px '+DOT; ctx.fillText('水濠',x+pxm*3.5,trackTop-12); });
+    // 障害（91.4cm）：水濠の手前にも同じ障害
+    S.gates.forEach((g,gi)=>{ if(g.kind!=='X'&&g.kind!=='W') return; const x=X(g.x); if(x<-60||x>W+60) return;
+      const hit=g.res==='M'&&me.x>g.x;
+      for(let l=0;l<LANES;l++){ const fy=trackTop+l*laneH+laneH*0.8; drawBarrier(x,fy,0.51*laneH*1.95,Math.max(pxm*1.6,laneH*1.25),hit&&l===ME); } });
+  } else {
+    S.zones.forEach(zx=>{ ctx.fillStyle='rgba(95,208,230,.14)'; ctx.fillRect(X(zx-9),trackTop,pxm*13,LANES*laneH); ctx.fillStyle='rgba(95,208,230,.8)'; ctx.fillRect(X(zx)-1,trackTop,2,LANES*laneH); });
+    const step=S.mstep;
+    for(let m=Math.max(0,Math.floor(cam/step)*step); m<=Math.min(D,cam+S.win+step); m+=step){
+      const x=X(m); if(x<-40||x>W+40) continue;
+      if(m>=D) continue;
+      ctx.fillStyle=m===0?'#fff':'rgba(255,255,255,.55)'; ctx.fillRect(x-(m===0?2:1),trackTop,m===0?4:2,LANES*laneH);
+      ctx.fillStyle='#fff'; ctx.font='10px '+DOT; ctx.fillText(m===0?'START':fmtDist(m),x,trackTop-12);
+    }
+    const fx=X(D); if(fx>-60&&fx<W+60){ const sz=laneH/4;
+      for(let yy=0;yy<LANES*4;yy++) for(let xx=0;xx<3;xx++){ ctx.fillStyle=(xx+yy)%2?'#111':'#f4f4f4'; ctx.fillRect(fx+xx*sz-sz*1.5,trackTop+yy*sz,sz,sz); }
+      ctx.fillStyle='#fff'; ctx.fillRect(fx-1.5,16,3,trackTop-16); ctx.fillStyle='#ffb547'; ctx.font='12px '+DISP; ctx.fillText('FINISH',fx,trackTop-12); }
+    ctx.font=`${Math.round(laneH*0.62)}px ${DISP}`; ctx.fillStyle='rgba(255,255,255,.8)'; ctx.textBaseline='middle';
+    for(let i=0;i<LANES;i++){ const x=X(-2.6); if(x>-30) ctx.fillText(String(i+1),x,trackTop+i*laneH+laneH*0.55); }
+    ctx.textBaseline='alphabetic';
+    if(S.ev.dip!==false&&S.kind==='phys'){ const dx=X(D-DIPLEN); if(dx>-10&&dx<W+10){ ctx.fillStyle='rgba(255,181,71,.2)'; ctx.fillRect(dx,trackTop,X(D)-dx,LANES*laneH); } }
+    // ハードル（全レーン。手前の足＋支柱＋赤白の横板で「ハードル」と分かる形）
+    S.hurdleX.forEach((hx,i)=>{ const x=X(hx); if(x<-40||x>W+40) return;
+      for(let l=0;l<LANES;l++){ const fy=trackTop+l*laneH+laneH*0.8, hh=hurH*laneH*1.95;
+        const g=(l===ME)?S.gates[i]:null, down=g&&g.res==='M'&&me.x>hx-0.3;
+        const fall=down?clamp((me.x-hx+0.3)/1.6,0,1):0;
+        drawHurdle(x,fy,hh,Math.max(pxm*0.9,laneH*0.55),fall); } });
+  }
+  ctx.textAlign='left';
+  if(!distMode&&me.v>8&&S.phase==='run'){
+    const a=Math.min(.22,(me.v-8)*0.05), len=(me.v-7)*pxm*0.9;
+    ctx.fillStyle=`rgba(255,255,255,${a})`;
+    for(let i=0;i<14;i++){ const y=trackTop+rnd(i*3.1)*(H-trackTop); const x=((rnd(i)*W*2 - me.x*pxm*1.6)%(W*1.4)+W*1.4)%(W*1.4)-W*0.2; ctx.fillRect(x,y,len,1.2); }
+  }
+  const h=laneH*1.95, nLeg=S.ev.legs||(S.ev.leg?Math.round(D/S.ev.leg):0);
+  for(let i=0;i<LANES;i++){ const r=S.runners[i], fy=trackTop+i*laneH+laneH*0.8;
+    if(nLeg){ drawRelayLane(r,i,X,fy,h,dt,nLeg,distMode?S.gs:1); continue; }
+    r.jp=null;
+    if(distMode&&S.ev.water){ const sf=S.gs; for(const g of S.gates){ if(g.kind!=='X'&&g.kind!=='W') continue; const ph=(r.x-(g.x-2.0*sf))/((g.kind==='W'?4.2:3.3)*sf);
+      if(ph>0&&ph<1){ const gr=(i===ME)?(g.res||'P'):'P'; r.jp={ph,hF:0.51,sc:gr==='M'?0.6:gr==='O'?0.93:1}; break; } } }
+    else if(S.hurdleX.length){ for(let k=0;k<S.hurdleX.length;k++){ const ph=(r.x-(S.hurdleX[k]-2.0))/3.3;
+      if(ph>0&&ph<1){ const gr=(i===ME&&S.gates[k])?S.gates[k].res:'P'; r.jp={ph,hF:hurH,sc:gr==='M'?0.6:gr==='O'?0.93:1}; break; } } }
+    drawRunner(r,X(r.x),fy,h); }
+  ctx.restore();
+  if(S.photo>0){ ctx.fillStyle=`rgba(255,255,255,${S.photo*2})`; ctx.fillRect(0,0,W,H); }
+  drawConfetti(dt);
+}
+function drawConfetti(dt){
+  if(confetti.length){
+    confetti.forEach(p=>{ p.y+=p.vy*dt; p.x+=p.vx*dt+Math.sin(p.y*0.03+p.w)*0.6; p.r+=dt*5;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.r); ctx.fillStyle=p.c; ctx.fillRect(-p.s/2,-p.s/4,p.s,p.s/2); ctx.restore(); });
+    confetti=confetti.filter(p=>p.y<H+20);
+  }
+}
+function spawnConfetti(){
+  const cols=['#ffcf4a','#ffb547','#6fd39a','#5fd0e6','#ff6b5b','#ffffff'];
+  for(let i=0;i<120;i++) confetti.push({x:Math.random()*W,y:-Math.random()*H*0.6,vx:(Math.random()-.5)*40,vy:60+Math.random()*80,r:Math.random()*6,s:3+Math.random()*4,c:cols[i%cols.length],w:Math.random()*6});
+}
+
+// ---- ハードル本体：脚（手前に張り出す）＋支柱＋赤白の板。fall=0〜1で前に倒れる
+function drawHurdle(x,fy,hh,wd,fall){
+  ctx.save(); ctx.translate(x,fy); if(fall>0) ctx.rotate(fall*1.45);
+  ctx.lineCap='round';
+  ctx.strokeStyle='#2a3038'; ctx.lineWidth=Math.max(2,hh*0.07);
+  ctx.beginPath(); ctx.moveTo(-wd*0.5,0); ctx.lineTo(wd*0.12,0); ctx.moveTo(0,0); ctx.lineTo(0,-hh); ctx.stroke();      // 足と支柱
+  const bh=hh*0.3, bx=-wd*0.1, by=-hh;
+  ctx.fillStyle='#fafafa'; ctx.fillRect(bx-wd*0.0,by,wd*0.62,bh);
+  ctx.fillStyle='#e8412f'; for(let k=0;k<4;k++) if(k%2===0) ctx.fillRect(bx+k*wd*0.155,by,wd*0.155,bh);                  // 赤白ストライプ
+  ctx.strokeStyle='#1a1f26'; ctx.lineWidth=1.2; ctx.strokeRect(bx,by,wd*0.62,bh);
+  ctx.restore();
+}
+// ---- リレー：1レーンに最大3人（待機の次走者／走る人／走り終えた前走者）＋バトン
+function drawRelayLane(r,i,X,fy,h,dt,n,sf){
+  const D=S.D, seg=D/n, E=k=>seg*k-2*sf;
+  if(!r.team){ r.team=[r.look]; for(let k=1;k<n;k++) r.team.push(makeLook(i,false,r.look&&r.look.fem)); r.rc=[]; r.coff=[0]; }
+  let c=0; for(let k=1;k<n;k++) if(r.x>=E(k)) c=k;
+  const mk=(k,x,v,cyc)=>({look:r.team[k],lane:r.lane,me:false,x,v,cyc,fin:null,noBlock:true});
+  const track=(k,vx,cycIn)=>{ let st=r.rc[k]; if(!st) st=r.rc[k]={px:vx,cyc:cycIn!=null?cycIn:Math.random()};
+    const dv=(vx-st.px)/sf; st.px=vx; if(cycIn!=null) st.cyc=cycIn; else if(dt>0){ const v=Math.abs(dv)/dt; st.cyc+=dv/cycLen(Math.max(v,1)); st.v=v; } return st; };
+  if(r.coff[c]==null) r.coff[c]=(r.rc[c]?r.rc[c].cyc:0)-r.cyc;
+  const cvx=r.x+(c>0?0.9*sf*clamp(1-(r.x-E(c))/(5*sf),0,1):0);
+  const car=mk(c,c===0?r.x:r.x+1000,r.v,r.cyc+r.coff[c]); car.me=r.me; car.fin=r.fin; car.jp=null; car.noBlock=c!==0;
+  if(c===0&&r.x>25) car.x=r.x;                     // 通常走
+  track(c,cvx,car.cyc);
+  const items=[];                                  // [描画順, runner, 真の距離]
+  // 前走者（渡した後に減速して流れる）
+  if(c>=1){ const u=(r.x-E(c))/sf, xo=E(c)+8*sf*(1-Math.exp(-u/8)); const st=track(c-1,xo); const o=mk(c-1,xo+1000,Math.max(0.5,r.v*Math.exp(-u/8)),st.cyc); items.push([0,o,xo]); }
+  // 次走者（ゾーンで待機→加速して受ける）
+  let recv=null;
+  if(c+1<=n-1){ const Z=seg*(c+1), s0=Z-9*sf, p=clamp((r.x-(E(c+1)-18*sf))/(18*sf),0,1), xr=s0+(E(c+1)+0.9*sf-s0)*p*p;
+    const st=track(c+1,xr); const o=mk(c+1,p<=0?0:(xr-s0)/sf*3+0.02,p<=0?0:Math.max(0,(r.v*2*p)),st.cyc); if(p<=0) o.cyc=0; recv=o; items.push([0,o,xr]); }
+  items.push([1,car,cvx]);
+  items.forEach(([,o,vx])=>{ const px=X(vx); if(px<-90||px>W+90) return; drawRunner(o,px,fy,h); });
+  // バトン
+  let bx=null, by=null, bang=-0.35;
+  const hand=o=>o&&o.hand;
+  if(c+1<=n-1||c>=1){
+    const k=c+1<=n-1&&(r.x>E(c+1)-1.5*sf)?c+1:c;                         // 直近の受け渡し点
+    const e=E(k), t=(r.x-(e-1.5*sf))/(3*sf);
+    const miss=r.me&&S.gates&&S.gates[k-1]&&S.gates[k-1].res==='M';
+    if(t<0||t>1){ const o=(k===c&&t>1)?car:(recv&&t<0?car:car); const hd=hand(o); if(hd){ bx=hd[0]; by=hd[1]; } }
+    else {
+      const oldO=(k===c)?items.find(a=>a[1].look===r.team[c-1])?.[1]:car, newO=(k===c)?car:recv;
+      const h0=oldO&&hand(oldO), h1=newO&&(newO.handF||hand(newO));
+      if(h0&&h1){ const tt=miss&&t>0.35?0.35:t; bx=h0[0]+(h1[0]-h0[0])*tt; by=h0[1]+(h1[1]-h0[1])*tt-Math.sin(Math.PI*tt)*h*0.05;
+        if(miss&&t>0.35){ const f=clamp((t-0.35)/0.4,0,1); by=by+(fy-by-h*0.03)*f*f; bang=-0.35+f*1.2; }
+        if(!miss&&t>0.2&&t<0.8){ ctx.strokeStyle=`rgba(95,208,230,${0.8*Math.sin(Math.PI*t)})`; ctx.lineWidth=2.5; ctx.beginPath(); ctx.arc(bx,by,h*(0.08+0.18*t),0,7); ctx.stroke(); } }
+    }
+    if(miss&&r.x>e+1.5*sf){ if(r.x<e+5*sf){ bx=X(e+0.6*sf); by=fy-h*0.03; bang=0.85; } }
+  }
+  if(bx!=null){ const L=h*0.2; ctx.save(); ctx.translate(bx,by); ctx.rotate(bang); ctx.lineCap='round'; ctx.strokeStyle='#ffcf4a'; ctx.lineWidth=Math.max(3,h*0.045);
+    ctx.beginPath(); ctx.moveTo(-L/2,0); ctx.lineTo(L/2,0); ctx.stroke(); ctx.strokeStyle='#8a5a00'; ctx.lineWidth=Math.max(1,h*0.012); ctx.beginPath(); ctx.moveTo(-L*0.12,0); ctx.lineTo(L*0.12,0); ctx.stroke(); ctx.restore(); }
+}
+
+// ---- 3000m障害の障害：太い角材（白黒）と頑丈な脚。hit=接触で少し揺れる
+function drawBarrier(x,fy,hh,wd,hit){
+  ctx.save(); ctx.translate(x,fy); if(hit) ctx.rotate(Math.sin(S.t*40)*0.03);
+  ctx.fillStyle='#2a3038'; const lw=Math.max(2.5,hh*0.09);
+  ctx.fillRect(-wd*0.32,-hh,lw,hh); ctx.fillRect(wd*0.3-lw,-hh,lw,hh);                 // 脚2本
+  ctx.fillRect(-wd*0.42,-lw*0.6,wd*0.22,lw*0.6); ctx.fillRect(wd*0.2,-lw*0.6,wd*0.22,lw*0.6); // 台
+  const bh=Math.max(5,hh*0.26); ctx.fillStyle='#f6f6f2'; ctx.fillRect(-wd*0.4,-hh,wd*0.8,bh);
+  ctx.fillStyle='#111'; for(let k=0;k<5;k++) if(k%2===1) ctx.fillRect(-wd*0.4+k*wd*0.16,-hh,wd*0.16,bh);
+  ctx.strokeStyle='#1a1f26'; ctx.lineWidth=1; ctx.strokeRect(-wd*0.4,-hh,wd*0.8,bh);
+  ctx.restore();
+}
+
+// ===== 30-dist.js : ペース配分走（800m〜マラソン・競歩・4×400m） =====
+function distCreate(){
+  const ev=RUN.cur, sim=distInit(ev,SAVE.st);
+  { const gf=gearF(), P=sim.P; P.CS*=gf; P.pmax*=gf; P.pmin*=gf; if(P.lift) P.lift*=gf; }
+  sim.pace=sim.P.CS;
+  const eff0=(sim.P.CS-sim.P.pmin)/(sim.P.pmax-sim.P.pmin);
+  const st={ kind:'dist', ev, D:ev.D, win:ev.win, ts:ev.ts, gs:Math.max(1,Math.sqrt(ev.ts)/2), vis:0, mstep:10, phase:'idle', t:0, callT:0, setDur:0,
+    sim, eff:eff0, hold:0, jflash:0, flash:0, shake:0, photo:0, dip:null, doneAt:null, zones:[], hurdleX:[], gates:[], waterX:[], gcnt:{P:0,G:0,O:0,M:0}, cnt:{P:0,G:0,O:0,M:0},
+    runners: RUN.entries.map((e,i)=>({ name:e.name, lane:i+1, me:!!e.me, x:0, v:0, fin:null, rt:null, cyc:Math.random(), look:e.look, walk:!!ev.walk,
+      target:e.me?0:e.target, react:e.react||0.15, tau:e.tau||1.1, a:e.a||0 })), judge:null, judgeT:0, minW:1e9, dqAt:null, dm:{dev:0,n:0,rash:0,rn:0,spl:[],t90:null,w90:null} };
+  if(ev.legs){ const seg=ev.D/ev.legs; for(let k=1;k<ev.legs;k++){ st.gates.push({x:seg*k-2*st.gs,kind:'B',done:false,res:null}); } }
+  if(ev.water){ for(let k=1;k*ev.water.every-100<=ev.D-150;k++){ const gx=k*ev.water.every-100; st.gates.push({x:gx,kind:'W',done:false,res:null}); st.waterX.push(gx); }
+    // 障害（高さ91.4cm）：1周400mに4台。水濠を含めて約80mごと
+    for(let L=0;L*400<ev.D;L++) [60,140,220,380].forEach(o=>{ const x=L*400+o; if(x<=ev.D-40) st.gates.push({x,kind:'X',done:false,res:null}); });
+    st.gates.sort((a,b)=>a.x-b.x); }
+  return st;
+}
+function distStart(){ S.phase='marks'; S.callT=0; show('位置について',''); }
+const distHasGate=()=>!!(S.ev.water||S.ev.legs);
+const distNextGate=()=>S.gates.find(g=>!g.done);
+function distTap(p){
+  S.flash=0.12;
+  if(S.phase==='idle'||S.phase==='foul'){ S=distCreate(); distStart(); return; }
+  if(S.phase==='set'){ S.phase='foul'; show('フライング！','foul'); beep(220,.5,.08); buzz(300); return; }
+  if(S.phase!=='run') return;
+  // 右側タップ／スペースはJUMP・BATON、それ以外のタップはペースを上げる
+  const g=distNextGate(), sim=S.sim, hasG=distHasGate(), right=p&&p.x!=null&&p.x>0.72&&hasG;
+  if(g&&hasG&&(right||(p&&p.key))){ const te=(g.x-sim.x)/Math.max(sim.v*S.ts,1);
+    if(te<=1.2){ const a=Math.abs(te); if(a<=WIN.O){ g.err=te; waterResolve(g,a<=WIN.P?'P':a<=WIN.G?'G':'O'); } return; } }
+  if(right) return;
+  distEffort();
+}
+const EFF_TAP=0.08, EFF_DECAY=0.30;          // 1タップ＋8%／放置で毎秒おおよそ30%ずつ落ちる
+function distEffort(){ if(S.phase!=='run'||S.runners[ME].fin!==null) return; S.eff=Math.min(1,S.eff+EFF_TAP); S.tapN=(S.tapN||0)+1; }
+function waterResolve(g,jg){
+  const sim=S.sim; g.done=true; g.res=jg; S.gcnt[jg]++; if(jg==='P') S.cnt.P++;
+  if(g.kind==='X'){
+    if(jg==='P'){ beep(880,.06,.04,'triangle'); }
+    else if(jg==='G'){ sim.W-=0.6; beep(660,.05,.04,'triangle'); }
+    else if(jg==='O'){ sim.W-=2; sim.v*=0.97; beep(520,.05,.04,'triangle'); }
+    else { sim.W-=6; sim.v*=0.85; show('障害に接触！','foul'); beep(140,.18,.07); buzz(120); S.shake=0.2; }
+  }
+  else if(g.kind==='B'){
+    if(jg==='P'){ show('バトンパス！','go'); beep(990,.08,.05,'triangle'); }
+    else if(jg==='G'){ sim.v*=0.99; beep(700,.06,.04,'triangle'); }
+    else if(jg==='O'){ sim.W-=2; sim.v*=0.97; beep(520,.05,.04,'triangle'); }
+    else { sim.W-=8; sim.v*=0.88; show('受け渡しミス','foul'); beep(140,.18,.07); buzz(120); }
+  }
+  else if(jg==='P'){ show('ナイスジャンプ','go'); beep(880,.08,.05,'triangle'); }
+  else if(jg==='G'){ sim.W-=1.5; beep(660,.06,.04,'triangle'); }
+  else if(jg==='O'){ sim.W-=4; sim.v*=0.95; beep(520,.05,.04,'triangle'); }
+  else { sim.W-=14; sim.v*=0.75; show('水没！','foul'); beep(140,.2,.07); buzz(150); S.shake=0.25; }
+  S.judge={g:jg}; S.judgeT=0.6; const tok=S; setTimeout(()=>{ if(S===tok&&S.phase==='run') show('',''); },600);
+}
+function distDown(p){ distTap(p); }
+function distUp(){}
+function distKey(code,down){ if(S.phase!=='run'){ if(down) distTap({}); return; } if(down&&code==='ArrowUp') distEffort(); }
+function distUpdate(dt){
+  if(!S) return;
+  S.flash=Math.max(0,S.flash-dt); S.shake=Math.max(0,S.shake-dt); S.photo=Math.max(0,S.photo-dt); S.judgeT=Math.max(0,S.judgeT-dt);
+  if(S.phase==='marks'){ S.callT+=dt; if(S.callT>1.6){ S.phase='set'; S.callT=0; S.setDur=1.1+Math.random()*1.3; show('用意',''); } distBoard(); return; }
+  if(S.phase==='set'){ S.callT+=dt; if(S.callT>=S.setDur){ S.phase='run'; S.t=0; S.shake=0.2; show('ドン！','go'); pistol(); const tok=S; setTimeout(()=>{ if(S===tok&&S.phase==='run') show('',''); },600); } return; }
+  if(S.phase!=='run') return;
+  const ev=S.ev, sim=S.sim, me=S.runners[ME], P=sim.P;
+  // ペース操作
+  if(me.fin===null){ S.eff=Math.max(0,S.eff*Math.exp(-EFF_DECAY*dt));
+    const tg=P.pmin+(P.pmax-P.pmin)*S.eff; sim.pace+=(tg-sim.pace)*(1-Math.exp(-dt/0.35)); sim.pace=clamp(sim.pace,P.pmin,P.pmax); }
+  // 時間を圧縮して進める（細かい刻みで計算）
+  let rem=dt*S.ts; const hold=0.25;
+  while(rem>1e-9){
+    const d=Math.min(hold,rem); rem-=d;
+    if(me.fin===null){
+      sim.draft=S.runners.some(r=>!r.me&&r.fin===null&&r.x-sim.x>0&&r.x-sim.x<2.5);
+      const g=distNextGate(); if(g&&sim.x-g.x>0&&(sim.x-g.x)/Math.max(sim.v*S.ts,1)>WIN.O) { g.err=null; waterResolve(g,'M'); }
+      const old=distStep(sim,d);
+      { const D=S.dm, q=D.spl.length; if(q<3&&sim.x>=S.D*(q+1)/4) D.spl.push(S.t+d); if(D.t90===null&&sim.x>=S.D*0.9){ D.t90=S.t+d; D.w90=sim.W/sim.P.W; } }
+      if(sim.x>=S.D){ me.fin=S.t+d*(S.D-old)/Math.max(1e-6,sim.x-old); S.photo=0.25; beep(880,.15,.05); sim.pace=P.pmin; }
+    } else { sim.v=Math.max(1.5,sim.v-0.5*d); sim.x+=sim.v*d; sim.t+=d; }
+    S.t+=d;
+    S.minW=Math.min(S.minW,sim.W);
+  }
+  if(me.fin===null){ const gd=distGuide(sim), D=S.dm; if(gd>0){ D.dev+=Math.abs(sim.pace-gd)/gd; D.n++; if(sim.x<0.1*S.D){ D.rash+=(sim.pace-gd)/gd; D.rn++; } } }
+  me.x=sim.x; me.v=sim.v; S.vis+=me.v*2*dt;
+  me.cyc+=dt*(0.9+0.07*me.v)*(ev.walk?1.3:1);
+  if(sim.dq&&S.dqAt===null){ S.dqAt=S.t; show('失格（DQ）','foul'); beep(160,.5,.08); buzz(300); }
+  S.runners.forEach(r=>{
+    if(r.me) return;
+    const o=r.x; r.x=oppPos(ev,r,S.t); r.v=(r.x-o)/Math.max(1e-6,dt*S.ts)||0;
+    if(r.fin===null&&S.t>=r.target) r.fin=r.target;
+    r.cyc+=dt*(0.9+0.07*Math.max(r.v,3))*(ev.walk?1.3:1);
+  });
+  const allIn=S.runners.every(r=>r.me||r.fin!==null);
+  if(((me.fin!==null||sim.dq)&&allIn)||S.t>ev.Te*2.5||(sim.dq&&S.t-S.dqAt>ev.Te*0.03)){ if(S.doneAt===null) S.doneAt=performance.now(); if(performance.now()-S.doneAt>1200) distFinish(); }
+  distBoard();
+}
+function distRanking(){ return [...S.runners].sort((a,b)=>{ if(a.fin!==null&&b.fin!==null) return a.fin-b.fin; if(a.fin!==null) return -1; if(b.fin!==null) return 1; return b.x-a.x; }); }
+function distBoard(){
+  const me=S.runners[ME], ev=S.ev, rem=Math.max(0,S.D-me.x);
+  $('kA').textContent='TIME'; $('kB').textContent='km/h'; $('kC').textContent='POS'; $('kD').textContent='残り';
+  $('bTime').textContent=fmtTime(me.fin!==null?me.fin:(S.phase==='run'||S.phase==='done'?S.t:0));
+  $('bSpeed').textContent=(me.v*3.6).toFixed(1);
+  $('bRank').textContent=S.phase==='run'||S.phase==='done'?(distRanking().indexOf(me)+1):'-';
+  $('bPB').textContent=rem>=1000?(rem/1000).toFixed(1)+'k':Math.round(rem)+'m';
+}
+function distFinish(){
+  S.phase='done'; show('','');
+  const me=S.runners[ME], sim=S.sim, rk=distRanking();
+  if(sim.dq){ const i=rk.indexOf(me); rk.splice(i,1); rk.push(me); }
+  const dmx=distMetrics();
+  concludeRace({
+    rk:rk.map(r=>({name:r.name,me:r.me,lane:r.lane,val:(r.me&&sim.dq)?null:r.fin})), legal:true, dq:sim.dq,
+    cnt:S.cnt, metrics:dmx.m, mini:dmx.html||`<span>最終の予備体力<b>${Math.max(0,sim.W).toFixed(0)}m</b></span>`});
+}
+
+// ---- タップ面
+function distPad(){
+  if(!S||!PW) return;
+  const {w,h,cx,cy,R}=padBase();
+  const sim=S.sim, P=sim.P, me=S.runners[ME];
+  if(S.phase==='idle'){ padLabel('TAP TO START',cx,cy,22,'#ffb547'); return; }
+  if(S.phase==='foul'){ padLabel('フライング',cx,cy-14,24,'#ff6b5b',DISP); padLabel('タップでやり直し',cx,cy+18,13,'#8fa2b0'); return; }
+  if(S.phase==='done') return;
+  if(S.phase==='marks'||S.phase==='set'){ padLabel(S.phase==='set'?'触らないで…':'位置について',cx,cy,22,S.phase==='set'?'#ff6b5b':'#8fa2b0',DISP); return; }
+  const water=distHasGate(), isB=!!S.ev.legs, zw=water?w*0.72:w;
+  // タップ領域（左側）：タップでペースUP、放すと落ちる
+  rx.fillStyle=S.flash>0?'rgba(255,181,71,.16)':'rgba(255,181,71,.04)'; rx.fillRect(0,0,zw,h);
+  rx.textAlign='left'; rx.fillStyle='rgba(255,181,71,.9)'; rx.font='11px '+DOT; rx.fillText('タップでペースUP　放すと落ちる',8,11);
+  // ペース棒
+  const bx=zw*0.08, bw=zw*0.84, py=h*0.3, ry=h*0.7;
+  const px=v=>bx+bw*clamp((v-P.pmin)/(P.pmax-P.pmin),0,1);
+  const gd=distGuide(sim);
+  rx.fillStyle='rgba(255,255,255,.1)'; roundRect(bx,py-4,bw,8,4); rx.fill();
+  rx.fillStyle='rgba(111,211,154,.35)'; rx.fillRect(px(gd*0.97),py-9,px(gd*1.03)-px(gd*0.97),18);       // 狙う帯
+  const gg=rx.createLinearGradient(bx,0,bx+bw,0); gg.addColorStop(0,'#2e6b4a'); gg.addColorStop(.6,'#ffb547'); gg.addColorStop(1,'#c24a31');
+  rx.fillStyle=gg; roundRect(bx,py-4,Math.max(6,px(sim.pace)-bx),8,4); rx.fill();
+  rx.fillStyle='#5fd0e6'; rx.fillRect(px(P.CS)-1,py-10,2,20);
+  rx.textAlign='center'; rx.font='9px '+DOT; rx.fillStyle='#5fd0e6'; rx.fillText('巡航',px(P.CS),py-15);
+  if(S.ev.walk){ rx.fillStyle='#e7c43a'; rx.fillRect(px(P.lift)-1,py-10,2,20); rx.fillStyle='#e7c43a'; rx.fillText('浮き',px(P.lift),py+17); }
+  rx.fillStyle='#ffb547'; rx.beginPath(); rx.moveTo(px(gd)-6,py-22); rx.lineTo(px(gd)+6,py-22); rx.lineTo(px(gd),py-12); rx.fill();
+  rx.fillStyle='#ffb547'; rx.fillText('目安',px(gd),py-28);
+  rx.fillStyle='#fff'; rx.beginPath(); rx.arc(px(sim.v),py,6,0,7); rx.fill();
+  { const lo=sim.pace<gd*0.97, hi=sim.pace>gd*1.03; padLabel(lo?'TAP!':hi?'待つ':'キープ',zw/2,h*0.5,lo?26:18,lo?'#ffb547':hi?'#ff6b5b':'#6fd39a',DISP); }
+  // 予備体力
+  const fr=clamp(sim.W/P.W,0,1);
+  rx.fillStyle='rgba(255,255,255,.1)'; roundRect(bx,ry-4,bw,8,4); rx.fill();
+  rx.fillStyle=sim.ex?'#ff6b5b':fr<0.25?'#e7c43a':'#6fd39a'; roundRect(bx,ry-4,Math.max(6,bw*fr),8,4); rx.fill();
+  rx.textAlign='left'; rx.fillStyle='#8fa2b0'; rx.font='10px '+DOT; rx.fillText('予備体力',bx,ry-12);
+  rx.textAlign='right'; rx.fillStyle=sim.ex?'#ff6b5b':'#fff'; rx.fillText(sim.ex?'ガス欠！':sim.draft?'ドラフト中':'',bx+bw,ry-12);
+  rx.textAlign='center';
+  if(S.ev.walk){ for(let i=0;i<3;i++){ rx.fillStyle=i<sim.cards?'#e7c43a':'rgba(255,255,255,.12)'; roundRect(zw-60+i*18,h-26,12,17,2); rx.fill(); }
+    rx.fillStyle='rgba(231,196,58,.7)'; roundRect(zw-60,h-8,48*clamp(sim.lift,0,1),3,1.5); rx.fill(); }
+  // 水濠のJUMP領域
+  if(water){
+    const jx=w*0.86, g=distNextGate(); rx.fillStyle='rgba(95,208,230,.07)'; rx.fillRect(zw,0,w-zw,h);
+    rx.fillStyle='rgba(255,255,255,.1)'; rx.fillRect(zw,0,1,h);
+    if(g){ const te=(g.x-sim.x)/Math.max(sim.v*S.ts,1);
+      if(te<=1.2){ const hot=Math.abs(te)<=WIN.P, rr0=Math.min(w-zw,h)*0.27;
+        ring(jx,h/2,rr0,hot,'#5fd0e6'); const rr=rr0+rr0*1.15*Math.max(0,te)/1.2; if(rr>rr0+2){ rx.lineWidth=3; rx.strokeStyle='#5fd0e6'; rx.beginPath(); rx.arc(jx,h/2,rr,0,7); rx.stroke(); }
+        padLabel(isB?'BATON':'JUMP',jx,h/2,18,'#5fd0e6',DISP); }
+      else padLabel((isB?'受け渡しまで ':g.kind==='X'?'障害まで ':'水濠まで ')+Math.max(0,Math.round(g.x-sim.x))+'m',jx,h/2,11,'#8fa2b0'); }
+    else padLabel(isB?'BATON':'JUMP',jx,h/2,16,'rgba(143,162,176,.5)',DISP);
+    if(S.judge&&S.judgeT>0){ rx.globalAlpha=Math.min(1,S.judgeT*3); padLabel(JT[S.judge.g],jx,18,14,JC[S.judge.g],DISP); rx.globalAlpha=1; }
+  }
+}
+ENGS.dist={create:distCreate,start:distStart,update:distUpdate,tap:distTap,down:distDown,up:distUp,key:distKey,drawStage:dt=>drawTrack(dt),drawPad:distPad,board:distBoard};
+
+// ===== 40-field.js : 跳躍・投てき（リングのタイミング競技） =====
+const RSCORE={P:1,G:0.8,O:0.5,M:0};
+function fieldCreate(){
+  const ev=RUN.cur, fk=ev.kind, tries=ev.tries||6;
+  const st={ kind:'field', ev, fk, tries, phase:'idle', t:0, sq:0, callT:0, flash:0, shake:0, photo:0, dip:null, early:0, cheer:0,
+    zones:[], hurdleX:[], gates:[], D:100, win:22, mstep:10,
+    ath: RUN.entries.map((e,i)=>({name:e.name,me:!!e.me,lane:i+1,look:e.look,target:e.target,att:[],best:null,fails:0})),
+    attNo:0, am:[], rlab:{}, rerr:{}, runHit:0, marks:[], rings:[], ri:0, runSum:0, runN:0, q:[], jud:[], foul:false, cnt:{P:0,G:0,O:0,M:0}, an:null, lastText:'', lastCol:'',
+    holding:null, holdT:0, ang:0, angFix:null, relFail:false, bars:[], bi:0, ba:0, consFail:0, totalFail:0, bestBar:0, hist:[], out:false, lastOK:null, lastPerf:0 };
+  st.ath.forEach(a=>{
+    if(a.me) return;
+    if(fk==='vert'){ st.bars=barList(ev); const r=oppVert(ev,a.target,st.bars); a.best=r.best; a.fails=r.total; }
+    else { a.att=oppAttempts(ev,a.target,tries); }
+  });
+  if(fk==='vert'){ st.bars=barList(ev); st.bi=startBarIndex(ev,SAVE.st,st.bars); }
+  return st;
+}
+function fieldStart(){ fieldBegin(); }
+function fieldBegin(){
+  S.phase='ready'; S.callT=0; S.sq=0; S.ri=0; S.runSum=0; S.runN=0; S.rerr={}; S.runHit=0; S.angF=1; S.takeF=0; S.foulLine=false; fieldWind(); S.holding=null; S.holdT=0; S.ang=0; S.angFix=null; S.relFail=false; S.q=[]; S.jud=[]; S.foul=false; S.an=null; S.lastHit=-1;
+  S.rings=seqSpec(S.ev); S.cheer=0;
+  show(S.fk==='vert'?`バー ${S.bars[S.bi].toFixed(2)}m`:'位置について','');
+}
+function myBest(){ let b=null; S.marks.forEach(m=>{ if(m>0&&(b===null||m>b)) b=m; }); return b; }
+function fieldRank(){   // 現時点の順位（跳躍・投てき）
+  const upto=S.fk==='vert'?null:S.attNo;
+  const rows=S.ath.map(a=>{
+    if(S.fk==='vert') return {a,v:a.me?S.bestBar:a.best,f:a.me?S.totalFail:a.fails};
+    const arr=a.me?S.marks:a.att.slice(0,Math.max(0,upto)); let b=0; arr.forEach(m=>{ if(m>b) b=m; }); return {a,v:b,f:0}; });
+  rows.sort((x,y)=>y.v-x.v||x.f-y.f);
+  return rows;
+}
+function fieldTap(p){
+  S.flash=0.12;
+  if(S.phase==='idle'){ fieldBegin(); return; }
+  if(S.phase==='mark'){
+    if(S.fk==='vert'){
+      if(S.out){ fieldFinish(); return; }
+      if(p&&p.x>0.75&&!p.key){ S.bi++; S.ba=0; if(S.bi>=S.bars.length){ S.out='top'; fieldFinish(); return; } }
+      fieldBegin(); return; }
+    if(S.attNo>=S.tries){ fieldFinish(); return; }
+    fieldBegin(); return;
+  }
+  if(S.phase!=='seq'||S.holding) return;
+  if(S.sq-S.lastHit<0.1) return;
+  const rg=S.rings[S.ri]; if(!rg) return;
+  const err=S.sq-rg.t, a=Math.abs(err);
+  if(a<=WIN.O){ S.lastHit=S.sq; ringJudge(a<=WIN.P?'P':a<=WIN.G?'G':'O',err); }
+  else if(err<0) S.early=0.3;
+}
+const TAKE_K=3.0;          // 走幅・三段の踏切：1秒のずれ＝3mのずれ（円が閉じる瞬間＝踏切線ぴったり）
+function ringJudge(g,err){
+  const rg=S.rings[S.ri];
+  if(rg.k==='take'&&S.fk==='horiz'){             // 踏切線：越えたらファウル、手前は距離のロス
+    const f=(err||0)*TAKE_K; S.takeF=f; S.rerr.take=err; S.rlab.take='踏切';
+    if(f>0){ S.foul=true; S.foulLine=true; S.cnt.M++; S.jud.push('M'); beep(150,.25,.06); buzz(120);
+      S.judge={g:'M',line:true}; S.judgeT=0.8; S.ri=S.rings.length; fieldEndAttempt(); return; }
+    const d=-f; g=d<=0.10?'P':d<=0.25?'G':d<=0.45?'O':'M';
+  }
+  S.cnt[g]++; S.jud.push(g);
+  if(rg.k==='run'){ S.runSum+=RSCORE[g]; S.runN++; if(g!=='M') S.runHit++; }
+  else if(!(rg.k==='take'&&S.fk==='horiz')){ S.q.push(g); S.rerr[rg.k]=err!==undefined?err:null; S.rlab[rg.k]=rg.label; }
+  if(g==='M'){ beep(150,.1,.05); buzz(60); } else { beep(rg.k==='run'?(g==='P'?880:g==='G'?660:520):(g==='P'?1100:880),.06,.045,'triangle'); if(g==='P') buzz(15); }
+  S.judge={g,early:err!==undefined&&g!=='P'&&err<0}; S.judgeT=0.5;
+  S.ri++;
+  if(rg.hold&&g!=='M'){ S.holding={k:rg.hold,t0:S.sq,rk:rg.k}; S.holdT=0; S.ang=0; return; }   // 押したまま → 角度／上昇
+  if(S.ri>=S.rings.length) fieldEndAttempt();
+}
+// 長押しを離した（または上限で自動的に離れた）
+// 風（円盤・やり）：記録と最適角が変わる。円盤は向かい風が有利
+function fieldWind(){
+  const id=S.ev.baseId||S.ev.id; S.wind=0; S.windF=1; S.angOpt=ANG_OPT[id];
+  if(id==='DT'||id==='JT'){ S.wind=Math.round((Math.random()*6-3)*10)/10;
+    if(id==='DT'){ S.windF=1-0.006*S.wind; S.angOpt=ANG_OPT[id]+1.5*S.wind; } else { S.windF=1+0.004*S.wind; S.angOpt=ANG_OPT[id]+1.0*S.wind; } }
+}
+const windTxt=w=>w===0?'無風':(w>0?'追い風 ':'向かい風 ')+Math.abs(w).toFixed(1)+'m/s';
+function fieldUp(){ if(S&&S.phase==='seq'&&S.holding) releaseHold(false); }
+function releaseHold(auto){
+  const H=S.holding; if(!H) return; S.holding=null;
+  let g;
+  if(H.k==='ang'){ const d=S.ang-S.angOpt; g=angGrade(d);
+    S.angFix=S.ang; S.angF=angFactor(d); S.rerr.ang=d; S.rlab.ang='角度'; }
+  else { const err=S.holdT-PV_UP, a=Math.abs(err); g=a<=WIN.P?'P':a<=WIN.G?'G':a<=WIN.O?'O':'M';
+    S.rerr.rel=err; S.rlab.rel='離すタイミング'; S.pvRel=S.holdT; if(g==='M') S.relFail=err<0?'early':'late'; }
+  if(H.k!=='ang') S.q.push(g); S.cnt[g]++; S.jud.push(g);
+  if(g==='M'){ beep(150,.12,.05); buzz(60); } else { beep(g==='P'?1180:g==='G'?940:700,.07,.05,'triangle'); if(g==='P') buzz(20); }
+  S.judge={g,ang:H.k==='ang'}; S.judgeT=0.8;
+  fieldEndAttempt();
+}
+function fieldMissRing(){
+  const rg=S.rings[S.ri];
+  S.cnt.M++; S.jud.push('M');
+  if(rg.k==='take'||rg.k==='rel'){ S.foul=true; S.ri=S.rings.length; beep(150,.2,.06); buzz(100); fieldEndAttempt(); return; }
+  if(rg.k==='run'){ S.runN++; } else { S.q.push('M'); if(rg.hold==='ang') S.angF=0.8; }
+  beep(150,.1,.05); S.judge={g:'M'}; S.judgeT=0.5;
+  S.ri++; if(S.ri>=S.rings.length) fieldEndAttempt();
+}
+function fieldEndAttempt(){
+  const ev=S.ev, res={runScore:S.runN?S.runSum/S.runN:0,q:S.q,foul:S.foul};
+  let perf=fieldPerf(ev,SAVE.st,res)*S.angF*gearF(S.fk)*S.windF;
+  if(S.fk==='horiz'&&!res.foul) perf=Math.max(0.01,perf-Math.abs(S.takeF));      // 記録は踏切線から測る
+  S.lastPerf=perf;
+  S.am.push({run:res.runScore,foul:res.foul,rerr:Object.assign({},S.rerr),runHit:S.runHit,runN:S.runN,ang:S.angFix,angF:S.angF,takeF:S.fk==='horiz'?S.takeF:null,line:S.foulLine,wind:S.wind});
+  if(S.fk==='vert'){
+    const bar=S.bars[S.bi], ok=!res.foul&&!S.relFail&&perf>=bar-1e-9; S.lastOK=ok;
+    if(ok){ S.bestBar=bar; S.consFail=0; S.ba=0; S.bi++; S.hist.push('o');
+      S.lastText='クリア！ '+bar.toFixed(2)+'m'; S.lastCol='go'; fanfareLite();
+      if(S.bi>=S.bars.length) S.out='top'; }
+    else { S.consFail++; S.totalFail++; S.ba++; S.hist.push('x');
+      S.lastText=res.foul?(S.ev.baseId==='PV'||S.ev.id==='PV'?'ポールを突けず':'ファウル（踏切失敗）'):S.relFail==='early'?'離すのが早い':S.relFail==='late'?'離すのが遅い':'失敗'; S.lastCol='foul';
+      if(S.consFail>=3) S.out='fail'; }
+    S.attNo++;
+  } else {
+    const mark=res.foul?0:perf; S.marks.push(mark); S.attNo++;
+    const b=myBest(); const isBest=mark>0&&mark>=b-1e-9;
+    S.lastText=mark>0?mark.toFixed(2)+'m':(S.foulLine?'ファウル（踏切線を越えた）':'FOUL'); S.lastCol=mark>0?'go':'foul';
+    S.lastIsBest=isBest;
+    if(mark>0&&isBest) fanfareLite();
+  }
+  const id=S.ev.baseId||S.ev.id;
+  S.an={t:0,dur:{LJ:1.7,TJ:1.4,HJ:1.9,PV:2.0,SP:1.9,DT:2.3,HT:2.4,JT:2.5}[id]||1.6,foul:res.foul,ok:S.lastOK,mark:S.marks[S.marks.length-1]||0,
+    bar:S.fk==='vert'?S.bars[Math.min(S.bars.length-1,S.bi-(S.lastOK?1:0))]:0, ang:S.angFix, hold:S.holdT, line:S.foulLine, takeF:S.takeF, relFail:S.relFail, pvRel:S.pvRel||0, perf, sq0:S.sq, q:S.q.slice()};
+  S.phase='fly'; show('','');
+}
+function fanfareLite(){ [660,880].forEach((f,i)=>beep(f,.15,.04,'triangle',i*0.09)); }
+function fieldUpdate(dt){
+  if(!S) return;
+  S.flash=Math.max(0,S.flash-dt); S.judgeT=Math.max(0,S.judgeT-dt); S.early=Math.max(0,S.early-dt); S.shake=Math.max(0,S.shake-dt); S.cheer=Math.max(0,S.cheer-dt);
+  S.t+=dt;
+  if(S.phase==='ready'){ S.callT+=dt; if(S.callT>1.0){ S.phase='seq'; S.sq=0; show('',''); } }
+  else if(S.phase==='seq'){
+    S.sq+=dt;
+    if(S.holding){ S.holdT+=dt;
+      if(S.holding.k==='ang'){ S.ang=Math.min(ANG_MAX,S.holdT*ANG_RATE); if(S.ang>=ANG_MAX) releaseHold(true); }
+      else if(S.holdT>PV_UP+WIN.O+0.08) releaseHold(true); }
+    while(S.phase==='seq'&&!S.holding&&S.rings[S.ri]&&S.sq>S.rings[S.ri].t+WIN.O) fieldMissRing();
+  }
+  else if(S.phase==='fly'){
+    S.an.t+=dt;
+    if(S.an.t>=S.an.dur){ S.phase='mark'; show(S.lastText,S.lastCol); if(S.lastCol==='go') S.cheer=1.5; }
+  }
+  fieldBoard();
+}
+function fieldBoard(){
+  const ev=S.ev;
+  if(S.fk==='vert'){
+    $('kA').textContent='BAR'; $('kB').textContent='連続失敗'; $('kC').textContent='POS'; $('kD').textContent='BEST';
+    $('bTime').textContent=S.bi<S.bars.length?S.bars[S.bi].toFixed(2):'-'; $('bSpeed').textContent=S.consFail+'/3';
+    $('bRank').textContent=fieldRank().findIndex(r=>r.a.me)+1; $('bPB').textContent=S.bestBar?S.bestBar.toFixed(2):'--';
+  } else {
+    $('kA').textContent='TRY'; $('kB').textContent='BEST'; $('kC').textContent='POS'; $('kD').textContent='PB';
+    $('bTime').textContent=Math.min(S.tries,S.attNo+(S.phase==='mark'||S.phase==='fly'?0:1))+'/'+S.tries;
+    const b=myBest(); $('bSpeed').textContent=b?b.toFixed(2):'--'; $('bRank').textContent=S.attNo?(fieldRank().findIndex(r=>r.a.me)+1):'-';
+    const p=RUN&&evSave(ev.id).pb[RUN.cup]; $('bPB').textContent=p!=null&&!ev.sub?p.toFixed(2):'--';
+  }
+}
+function fieldFinish(){
+  S.phase='done'; show('','');
+  const rows=fieldRank();
+  const rk=rows.map(r=>({name:r.a.name,me:r.a.me,lane:r.a.lane,val:r.v>0?r.v:null,
+    att:r.a.me?(S.fk==='vert'?null:S.marks.slice()):null}));
+  const tryHTML=S.fk==='vert'
+    ?`<span>最高<b class="best">${S.bestBar?S.bestBar.toFixed(2)+'m':'記録なし'}</b></span><span>失敗<b>${S.totalFail}</b></span><span>${S.hist.map(h=>h==='o'?'○':'×').join('')}</span>`
+    :`<div class="tryline">${S.marks.map((m,i)=>`<span>${i+1}回目<b class="${m>0?(m===Math.max(...S.marks)?'best':''):'f'}">${m>0?m.toFixed(2):'×'}</b></span>`).join('')}</div>`;
+  const fmx=fieldMetrics();
+  concludeRace({rk,legal:true,cnt:S.cnt,mini:tryHTML+fmx.html,metrics:fmx.m,field:true});
+}
+
+// ---- タップ面
+function fieldPad(){
+  if(!S||!PW) return;
+  const {w,h,cx,cy,R}=padBase();
+  if(S.phase==='idle'){ padLabel('TAP TO START',cx,cy,22,'#ffb547'); return; }
+  if(S.phase==='done') return;
+  if(S.phase==='ready'){ padLabel(S.fk==='vert'?'バー '+S.bars[S.bi].toFixed(2)+'m':'位置について',cx,cy,22,'#8fa2b0',DISP); if(S.wind) padLabel('風：'+windTxt(S.wind),cx,cy+26,13,'#5fd0e6'); return; }
+  if(S.phase==='fly'){ padLabel('…',cx,cy,28,'#8fa2b0',DISP); return; }
+  if(S.phase==='mark'){
+    padLabel(S.lastText,cx,cy-h*0.22,26,S.lastCol==='go'?'#6fd39a':'#ff6b5b',DISP);
+    if(S.fk==='vert'){
+      if(S.out){ padLabel(S.out==='top'?'全てのバーをクリア！':'3回連続失敗で終了',cx,cy+h*0.05,13,'#8fa2b0'); padLabel('タップで結果へ',cx,cy+h*0.3,14,'#ffb547'); }
+      else { rx.fillStyle='rgba(95,208,230,.07)'; rx.fillRect(w*0.75,0,w*0.25,h); rx.fillStyle='rgba(255,255,255,.1)'; rx.fillRect(w*0.75,0,1,h);
+        padLabel('次：'+S.bars[S.bi].toFixed(2)+'m に挑戦',w*0.375,cy+h*0.08,14,'#ffb547'); padLabel('タップで試技',w*0.375,cy+h*0.3,12,'#8fa2b0');
+        padLabel('パス',w*0.875,cy,16,'#5fd0e6',DISP); padLabel('次の高さへ',w*0.875,cy+22,10,'#8fa2b0'); }
+    } else {
+      const rows=fieldRank(), pos=rows.findIndex(r=>r.a.me)+1;
+      padLabel(`現在 ${pos}位　1位 ${rows[0].v>0?rows[0].v.toFixed(2)+'m':'-'}`,cx,cy+h*0.05,13,'#8fa2b0');
+      padLabel(S.attNo>=S.tries?'タップで結果へ':`タップで次の試技（${S.attNo+1}/${S.tries}）`,cx,cy+h*0.3,14,'#ffb547'); }
+    return;
+  }
+  // 長押し中：角度メーター／棒高跳の上昇メーター
+  if(S.holding){ fieldHoldPad(w,h,cx,cy,R); return; }
+  // seq: リング
+  const rg=S.rings[S.ri]; if(!rg) return;
+  const prev=S.ri>0?S.rings[S.ri-1].t:rg.t-0.9, per=Math.max(0.2,rg.t-prev);
+  const special=rg.k!=='run', col=special?'#5fd0e6':'#ffb547', hot=Math.abs(S.sq-rg.t)<=WIN.P;
+  const band=R*1.15*WIN.P/per;
+  rx.lineWidth=band*2; rx.strokeStyle=special?'rgba(95,208,230,.12)':'rgba(255,181,71,.12)'; rx.beginPath(); rx.arc(cx,cy,R,0,7); rx.stroke();
+  ring(cx,cy,R,hot,col);
+  const rr=R+R*1.15*(rg.t-S.sq)/per;
+  if(rr>4&&rr<R*4){ rx.lineWidth=3; rx.strokeStyle=col; rx.globalAlpha=clamp(0.4+(1-(rr-R)/(R*1.2)),0,1); rx.beginPath(); rx.arc(cx,cy,rr,0,7); rx.stroke(); rx.globalAlpha=1; }
+  padLabel(special?rg.label+'！':'',cx,cy-(rg.hold?8:0),special?22:1,col,DISP);
+  if(rg.hold) padLabel(rg.hold==='pv'?'押したまま上昇 → バーの上で離す':'押したまま角度UP → 離して決定',cx,cy+16,11,'#8fa2b0');
+  if(!special){ foot(cx-R*0.2,cy+R*0.08,R*0.28,true,'rgba(95,208,230,.35)'); foot(cx+R*0.2,cy-R*0.04,R*0.34,false,'#ffb547'); }
+  if(S.wind) padLabel('風：'+windTxt(S.wind),w-60,14,11,'#5fd0e6');
+  // 進行ドット
+  const n=S.rings.length, dw=Math.min(14,(w*0.6)/n), x0=cx-(n-1)*dw/2;
+  for(let i=0;i<n;i++){ const g=S.jud[i]; rx.fillStyle=g?JC[g]:i===S.ri?'#fff':'rgba(255,255,255,.2)'; rx.beginPath(); rx.arc(x0+i*dw,h-12,i===S.ri?3.5:2.6,0,7); rx.fill(); }
+  if(S.judge&&S.judgeT>0){ rx.globalAlpha=Math.min(1,S.judgeT*3); padLabel(JT[S.judge.g],cx,20-(0.5-S.judgeT)*8,18,JC[S.judge.g],DISP); rx.globalAlpha=1; }
+  if(S.early>0) padLabel('まだ早い',cx,h-30,12,'#8fa2b0');
+}
+function fieldHoldPad(w,h,cx,cy,R){
+  const id=S.ev.baseId||S.ev.id;
+  if(S.holding.k==='ang'){
+    const opt=S.angOpt, a0=Math.PI, toA=d=>a0+(d/90)*(-Math.PI/2)*1;      // 0°=左水平、90°=真上
+    const rr=Math.min(R*1.25,h*0.42), oy=cy+rr*0.45;
+    rx.lineWidth=10; rx.strokeStyle='rgba(255,255,255,.08)'; rx.beginPath(); rx.arc(cx,oy,rr,Math.PI,Math.PI*1.5+0.0001); rx.stroke();
+    rx.strokeStyle='rgba(111,211,154,.35)'; rx.beginPath(); rx.arc(cx,oy,rr,toA(opt-4.5),toA(opt+4.5),true); rx.stroke();
+    rx.lineWidth=4; rx.strokeStyle='#ffb547'; rx.beginPath(); rx.arc(cx,oy,rr,Math.PI,toA(S.ang),false); rx.stroke();
+    const na=toA(S.ang); rx.strokeStyle='#fff'; rx.lineWidth=3; rx.beginPath(); rx.moveTo(cx,oy); rx.lineTo(cx+Math.cos(na)*rr,oy+Math.sin(na)*rr); rx.stroke();
+    const ta=toA(opt); rx.fillStyle='#6fd39a'; rx.beginPath(); rx.arc(cx+Math.cos(ta)*(rr+12),oy+Math.sin(ta)*(rr+12),3.5,0,7); rx.fill();
+    padLabel(Math.round(S.ang)+'°',cx+rr*0.45,oy-rr*0.25,34,'#ffb547',DISP);
+    padLabel('目安 '+Math.round(opt)+'°'+(S.wind?'（風補正）':''),cx+rr*0.45,oy+4,11,'#6fd39a');
+    if(S.wind) padLabel(windTxt(S.wind),cx+rr*0.45,oy+20,10,'#5fd0e6');
+    padLabel('離すと角度が決まる',cx,h-12,11,'#8fa2b0');
+  } else {
+    const bx=cx-R*0.18, by0=h*0.86, by1=h*0.12, k=clamp(S.holdT/(PV_UP*1.25),0,1), y=lerp(by0,by1,k), ty=lerp(by0,by1,PV_UP/(PV_UP*1.25));
+    const bw=R*0.36, tw=(WIN.G/(PV_UP*1.25))*(by0-by1);
+    rx.fillStyle='rgba(255,255,255,.08)'; roundRect(bx,by1,bw,by0-by1,6); rx.fill();
+    rx.fillStyle='rgba(111,211,154,.35)'; rx.fillRect(bx-6,ty-tw,bw+12,tw*2);
+    rx.fillStyle='#fff'; rx.fillRect(bx-10,ty-1,bw+20,2);
+    rx.fillStyle='#ffb547'; roundRect(bx,y,bw,by0-y,6); rx.fill();
+    padLabel('バー',bx+bw+28,ty,12,'#fff');
+    padLabel(k<PV_UP/(PV_UP*1.25)-0.12?'上昇中…':'今！離す',cx+R*0.75,cy,20,k<PV_UP/(PV_UP*1.25)-0.12?'#8fa2b0':'#6fd39a',DISP);
+  }
+}
+ENGS.field={create:fieldCreate,start:fieldStart,update:fieldUpdate,tap:fieldTap,down:fieldTap,up:fieldUp,drawStage:dt=>drawField(dt),drawPad:fieldPad,board:fieldBoard};
+
+// ===== 45-fieldscene.js : 跳躍・投てきの舞台（実寸の世界をカメラでスクロール） =====
+// 世界座標：x[m]（踏切板・ボックス・バー・投てきラインが 0）、y[m]（地面が 0、上が＋）
+const AR={x:40,fin:null,me:true,lane:ME+1,look:null,v:0,cyc:0};
+const lerp=(a,b,u)=>a+(b-a)*u, ease=u=>u*u*(3-2*u);
+const FV={left:0,ppm:40,gy:0,h:70};
+const SX=x=>(x-FV.left)*FV.ppm, SY=y=>FV.gy-y*FV.ppm;
+const FG={   // 種目ごとの配置
+  LJ:{xs:-36,xe:0.15}, TJ:{xs:-32,xe:0.15}, HJ:{xs:-17,xe:-1.0}, PV:{xs:-38,xe:-4.16},
+  SP:{c:-1.07,r:1.07}, DT:{c:-1.25,r:1.25}, HT:{c:-1.07,r:1.07}, JT:{xs:-27,xe:-1.6} };
+const POLE_L=4.6, REL_H={SP:2.1,DT:1.5,HT:1.7,JT:2.0};
+function seqProgress(kind){        // 助走の進み（1で踏切／リリース）。1を少し超えてもよい
+  const rs=S.rings, t0=rs[0].t-0.9; let ti=rs.findIndex(r=>r.k===kind); if(ti<0) ti=rs.length-1;
+  return clamp((S.sq-t0)/(rs[ti].t-t0),0,1.15);
+}
+function seqCyc(){
+  if(S.phase!=='seq') return S.t*2.2;
+  const rs=S.rings, i=Math.min(S.ri,rs.length-1), prev=i>0?rs[i-1].t:rs[0].t-0.9, f=clamp((S.sq-prev)/Math.max(0.1,rs[i].t-prev),0,1); return i+f;
+}
+const runX=(g,p)=>g.xs+(g.xe-g.xs)*(0.45*p+0.55*p*p);
+function ringT(k){ const r=S.rings.find(r=>r.k===k); return r?r.t:0; }
+function fieldEst(){   // 残りを全部PERFECTとした時の見込み記録（三段跳の歩幅・棒高跳の上がり方に使う）
+  const q=S.q.slice(); const n=S.rings.filter(r=>r.k!=='run'&&!(S.fk==='horiz'&&r.k==='take')).length+(S.rings.some(r=>r.hold==='pv')?1:0); while(q.length<n) q.push('P');
+  return fieldPerf(S.ev,SAVE.st,{runScore:S.runN?S.runSum/S.runN:1,q,foul:false})*gearF(S.fk)*(S.windF||1);
+}
+// 人物を描く（hipは画面座標）。sx<0で左右反転／|sx|<1で回転中の見え方
+function drawFig(J,h,o){
+  o=o||{};
+  AR.look=RUN.entries[ME].look;
+  if(o.shadow!=null){ ctx.fillStyle='rgba(0,0,0,.28)'; ctx.beginPath(); ctx.ellipse(o.shadow,FV.gy+1,h*0.22*(o.sh||1),h*0.04,0,0,7); ctx.fill(); }
+  ctx.save(); const sx=o.sx!=null?o.sx:1;
+  if(sx!==1){ ctx.translate(J.hip[0],0); ctx.scale(Math.abs(sx)<0.06?0.06*Math.sign(sx||1):sx,1); ctx.translate(-J.hip[0],0); }
+  paint(J,AR,h,1); ctx.restore();
+  const ty=Math.min(J.head[1],J.hip[1])-h*0.2; ctx.fillStyle='#ffb547'; ctx.beginPath(); ctx.moveTo(J.head[0]-6,ty-9); ctx.lineTo(J.head[0]+6,ty-9); ctx.lineTo(J.head[0],ty); ctx.fill();
+}
+const handScr=(J,sx,far)=>{ const a=J.arms.find(a=>!!a.far===!!far); return [J.hip[0]+(a.hd[0]-J.hip[0])*(sx==null?1:sx),a.hd[1]]; };
+function runPoseAt(x,cyc,lean,v){ AR.x=lean; AR.v=v||9; AR.cyc=cyc; return runPose(AR,SX(x),FV.gy,FV.h,cyc); }
+function poseAt(x,y,P){ AR.v=0; return mkPose([SX(x),SY(y)],P,FV.h); }
+const STAND={tr:3,legs:[{t:3,k:6},{t:-3,k:6}],arms:[{u:6,e:12},{u:-6,e:12}]};
+
+function drawField(dt){
+  if(!S||!W) return;
+  dt=dt||0.016;
+  const ev=S.ev, id=ev.baseId||ev.id;
+  const standH=Math.max(52,H*0.24), gy=standH+(H-standH)*0.66;
+  const hh=Math.min((H-standH)*0.56,W*0.27);
+  let ppm=hh/1.85;
+  if(id==='PV') ppm=Math.min(ppm,(gy-14)/7.3); else if(id==='HJ') ppm=Math.min(ppm,(gy-14)/3.2);
+  FV.ppm=ppm; FV.gy=gy; FV.h=1.85*ppm;
+  ctx.save();
+  if(S.shake>0) ctx.translate((Math.random()-.5)*5*S.shake*4,(Math.random()-.5)*3*S.shake*4);
+  ctx.fillStyle='#0b1217'; ctx.fillRect(-10,-10,W+20,H+20);
+  // 種目ごとに人物の位置とカメラを決めてから背景→人物
+  const scene=(id==='LJ'||id==='TJ')?sceneHoriz:id==='HJ'?sceneHJ:id==='PV'?scenePV:sceneThrow;
+  const base=ppm, plan=scene(ev,id,true);           // カメラ位置（と投てきのズーム）だけ先に決める
+  FV.left=plan.left; if(plan.ppm){ FV.ppm=plan.ppm; FV.h=1.85*plan.ppm; }
+  drawStands(standH,FV.left*FV.ppm*0.5,S.t,S.cheer>0);
+  const top=standH;
+  if(id==='SP'||id==='DT'||id==='HT'||id==='JT') groundThrow(ev,id,top); else groundJump(ev,id,top);
+  ctx.textAlign='center';
+  FV.ppm=base; FV.h=1.85*base;                       // 同じ計算をもう一度して描く
+  scene(ev,id,false);
+  ctx.restore();
+  drawConfetti(dt);
+}
+function leaderMark(){ const rows=fieldRank(); return rows[0].v; }
+
+// ---------- 地面 ----------
+function groundJump(ev,id,top){
+  const tg=ctx.createLinearGradient(0,top,0,H); tg.addColorStop(0,'#b0432c'); tg.addColorStop(1,'#c9503a');
+  ctx.fillStyle=tg; ctx.fillRect(-10,top,W+20,H-top+10);
+  ctx.fillStyle='#223544'; ctx.fillRect(-10,top-5,W+20,5);
+  const L=FV.left, R=L+W/FV.ppm;
+  // 助走路のライン（1m毎に薄く、5m毎に白）
+  for(let m=Math.floor(L);m<=R+1;m++){ const x=SX(m); ctx.fillStyle=m%5===0?'rgba(255,255,255,.28)':'rgba(0,0,0,.07)'; ctx.fillRect(x,top,m%5===0?2:1,H-top-7); }
+  ctx.fillStyle='rgba(255,255,255,.75)'; ctx.fillRect(-10,FV.gy+FV.ppm*0.35,W+20,1.5); ctx.fillRect(-10,FV.gy-FV.ppm*0.55,W+20,1.5);
+  ctx.font='10px '+DOT; ctx.fillStyle='rgba(255,255,255,.55)';
+  if(id==='LJ'||id==='TJ'){
+    for(let m=Math.ceil(L/5)*5;m<=Math.min(R,-5);m+=5) ctx.fillText(-m+'m',SX(m),H-12);
+    const p0=id==='TJ'?11:1, p1=id==='TJ'?ev.Te*1.15+1:ev.Te*1.15+1;
+    ctx.fillStyle='#d6b778'; ctx.fillRect(SX(p0),top,SX(p1)-SX(p0),H-top-7); ctx.fillStyle='rgba(0,0,0,.08)'; ctx.fillRect(SX(p0),top,SX(p1)-SX(p0),4);
+    ctx.font='10px '+DOT; for(let m=Math.ceil(p0);m<=p1;m++){ const x=SX(m); ctx.fillStyle='rgba(0,0,0,.25)'; ctx.fillRect(x,top+4,1,8); if(m%(id==='TJ'?2:1)===0&&m>=(id==='TJ'?12:4)){ ctx.fillStyle='rgba(60,40,10,.9)'; ctx.fillText(m+'m',x,H-14); } }
+    // 踏切板（白・幅20cm）と踏切線。踏切線より先を踏むとファウル
+    const yT=FV.gy-FV.ppm*0.55, yB=FV.gy+FV.ppm*0.35, lx=SX(0);
+    ctx.fillStyle='#f4f4f4'; ctx.fillRect(SX(-0.2),yT,0.2*FV.ppm,yB-yT);
+    ctx.fillStyle='#fff'; ctx.fillRect(lx-1.5,top,3,H-top-7);                                   // 踏切線（縦に通す）
+    ctx.fillStyle='#e8a13a'; ctx.fillRect(lx,yT,Math.max(3,0.1*FV.ppm),yB-yT);                  // 粘土板
+    ctx.fillStyle='rgba(255,255,255,.9)'; ctx.font='10px '+DOT; ctx.fillText('踏切線',lx,top+12);
+    if(S.an&&S.an.line&&S.phase!=='seq'){ ctx.fillStyle='#ff3b30'; ctx.fillRect(lx+FV.ppm*0.4,FV.gy-FV.h*0.9,2,FV.h*0.9); ctx.fillRect(lx+FV.ppm*0.4,FV.gy-FV.h*0.9,FV.h*0.28,FV.h*0.18); }
+    const lm=S.attNo?leaderMark():0; if(lm>0){ const x=SX(lm); ctx.fillStyle='#ffcf4a'; ctx.fillRect(x-1,top-4,2,H-top-3); ctx.fillText('1位',x,top-9); }
+    const best=myBest(); if(best&&S.phase!=='fly'){ const x=SX(best); ctx.fillStyle='#fff'; ctx.fillRect(x-1,top+2,2,H-top-9); ctx.fillText(best.toFixed(2),x,top+16); }
+  }
+}
+function groundThrow(ev,id,top){
+  const L=FV.left, R=L+W/FV.ppm;
+  // 手前はエプロン（赤）、ラインの先は芝
+  ctx.fillStyle='#a8452f'; ctx.fillRect(-10,top,W+20,H-top+10);
+  const gx=Math.max(-10,SX(0)); const gg=ctx.createLinearGradient(0,top,0,H); gg.addColorStop(0,'#2f6b3f'); gg.addColorStop(1,'#3d8550');
+  ctx.fillStyle=gg; ctx.fillRect(gx,top,W+20-gx,H-top+10);
+  ctx.fillStyle='rgba(255,255,255,.04)'; for(let m=Math.floor(L/4)*4;m<R;m+=8) ctx.fillRect(SX(m),top,4*FV.ppm,H-top);
+  ctx.fillStyle='#223544'; ctx.fillRect(-10,top-5,W+20,5);
+  const step=id==='SP'?2:id==='JT'?10:5, lab=id==='SP'?2:10; ctx.font='10px '+DOT;
+  for(let m=step;m<=ev.Te*1.25;m+=step){ const x=SX(m); if(x<-30||x>W+30) continue; ctx.fillStyle='rgba(255,255,255,.5)'; ctx.fillRect(x,top+4,1.5,H-top-12); if(m%lab===0){ ctx.fillStyle='rgba(255,255,255,.85)'; ctx.fillText(m+'m',x,H-12); } }
+  const lm=S.attNo?leaderMark():0; if(lm>0){ const x=SX(lm); ctx.fillStyle='#ffcf4a'; ctx.fillRect(x-1,top-4,2,H-top-3); ctx.fillText('1位',x,top-9); }
+  const best=myBest(); if(best&&S.phase!=='fly'){ const x=SX(best); ctx.fillStyle='#fff'; ctx.fillRect(x-1,top+2,2,H-top-9); ctx.fillText(best.toFixed(2),x,top+16); }
+  const g=FG[id];
+  if(id==='JT'){
+    for(let m=Math.floor(L);m<=Math.min(R,0);m++){ if(m%5===0){ ctx.fillStyle='rgba(255,255,255,.25)'; ctx.fillRect(SX(m),top,2,H-top-7); } }
+    ctx.fillStyle='rgba(255,255,255,.75)'; ctx.fillRect(-10,FV.gy+FV.ppm*0.35,SX(0)+10,1.5); ctx.fillRect(-10,FV.gy-FV.ppm*0.55,SX(0)+10,1.5);
+    ctx.fillStyle='#fff'; ctx.fillRect(SX(0)-2,FV.gy-FV.ppm*0.6,4,FV.ppm*1.0);            // ファウルライン（円弧）
+  } else {
+    // ケージ（円盤・ハンマー）
+    if(id!=='SP'){ const x0=SX(g.c-2.2), x1=SX(g.c+1.6), y0=SY(4.2); ctx.strokeStyle='rgba(220,230,235,.11)'; ctx.lineWidth=1;
+      for(let x=x0;x<=x1;x+=6){ ctx.beginPath(); ctx.moveTo(x,y0); ctx.lineTo(x,FV.gy); ctx.stroke(); }
+      for(let y=y0;y<=FV.gy;y+=6){ ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x1,y); ctx.stroke(); }
+      ctx.fillStyle='#66727c'; ctx.fillRect(x0-2,y0,3,FV.gy-y0); ctx.fillRect(x1-1,y0,3,FV.gy-y0); }
+    ctx.fillStyle='rgba(255,255,255,.9)'; ctx.beginPath(); ctx.ellipse(SX(g.c),FV.gy+4,g.r*FV.ppm+3,g.r*FV.ppm*0.2+2,0,0,7); ctx.fill();
+    ctx.fillStyle='#7d7f80'; ctx.beginPath(); ctx.ellipse(SX(g.c),FV.gy+4,g.r*FV.ppm,g.r*FV.ppm*0.2,0,0,7); ctx.fill();
+    if(id==='SP'){ ctx.fillStyle='#f4f4f4'; ctx.fillRect(SX(0)-2,FV.gy-FV.ppm*0.1,5,FV.ppm*0.22); }   // 足留材
+  }
+}
+
+// ---------- 走幅跳・三段跳 ----------
+const LJK=[
+  [0,   {tr:8, legs:[{t:88,k:95},{t:-17,k:8}],  arms:[{u:-27,e:40},{u:173,e:10}]}],
+  [0.3, {tr:-8,legs:[{t:-28,k:75},{t:-30,k:85}],arms:[{u:162,e:5},{u:158,e:5}]}],
+  [0.62,{tr:20,legs:[{t:70,k:50},{t:66,k:55}],  arms:[{u:130,e:5},{u:126,e:5}]}],
+  [0.86,{tr:45,legs:[{t:130,k:5},{t:126,k:5}],  arms:[{u:120,e:10},{u:116,e:10}]}],
+  [1,   {tr:35,legs:[{t:105,k:20},{t:102,k:22}],arms:[{u:85,e:20},{u:80,e:20}]}]];
+// 三段跳：ホップ＝踏切った脚(奥)で着地、ステップ＝反対の脚(手前)で着地、ジャンプ＝手前の脚で踏切
+const HOPK=[[0,{tr:10,legs:[{t:85,k:95},{t:-20,k:10}],arms:[{u:-30,e:50},{u:60,e:50}]}],
+  [0.5,{tr:8,legs:[{t:10,k:60},{t:55,k:105}],arms:[{u:40,e:50},{u:40,e:50}]}],
+  [1,{tr:6,legs:[{t:-25,k:55},{t:35,k:12}],arms:[{u:70,e:40},{u:65,e:40}]}]];
+const STEPK=[[0,{tr:8,legs:[{t:60,k:90},{t:-25,k:10}],arms:[{u:70,e:40},{u:65,e:40}]}],
+  [0.45,{tr:8,legs:[{t:90,k:80},{t:-35,k:30}],arms:[{u:75,e:35},{u:70,e:35}]}],
+  [1,{tr:6,legs:[{t:35,k:12},{t:-25,k:55}],arms:[{u:70,e:40},{u:65,e:40}]}]];
+const TKO=LJK[0][1];
+const TKO2={tr:8,legs:[{t:-17,k:8},{t:88,k:95}],arms:[{u:150,e:15},{u:150,e:15}]};   // 三段跳のジャンプ踏切（手前の脚で踏切・両腕振り上げ）
+const LJK2=LJK.map((k,i)=>i===0?[0,TKO2]:k);
+function angleArrow(x,y,ang,col){
+  const L=1.6*FV.ppm, a=-ang*D2R, sx=SX(x), sy=SY(y);
+  ctx.strokeStyle='rgba(255,255,255,.25)'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(sx,sy); ctx.lineTo(sx+L*1.1,sy); ctx.stroke();
+  ctx.strokeStyle=col||'#ffb547'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(sx,sy); ctx.lineTo(sx+Math.cos(a)*L,sy+Math.sin(a)*L); ctx.stroke();
+  ctx.beginPath(); ctx.arc(sx,sy,L*0.45,a,0); ctx.stroke();
+  ctx.fillStyle=col||'#ffb547'; ctx.font='16px '+DISP; ctx.fillText(Math.round(ang)+'°',sx+L*0.75,sy-L*0.18);
+}
+function sceneHoriz(ev,id,plan){
+  const g=FG[id], tj=id==='TJ', a=S.an, est=(S.phase==='seq'&&tj)?fieldEst():(a?a.mark:0);
+  const hop=0.35*est, stp=0.29*est;
+  let hipX, J=null, shadowX, angInfo=null, sx=1;
+  if(S.phase==='seq'||S.phase==='ready'||S.phase==='idle'){
+    const p=S.phase==='seq'?seqProgress('take'):0, t1=ringT('take'), t2=ringT('step'), t3=ringT('jump');
+    if(S.holding){ const k=Math.min(1,S.holdT*1.4), x0=tj?g.xe+hop+stp:g.xe; hipX=x0+0.35*k;
+      J=poseAt(hipX,0.98+0.14*k,tj?TKO2:TKO); angInfo=[hipX,0.98+0.14*k]; }
+    else if(tj&&S.phase==='seq'&&S.ri>S.rings.findIndex(r=>r.k==='take')&&S.sq>=t1){
+      if(S.sq<t2){ const u=(S.sq-t1)/(t2-t1); hipX=lerp(g.xe,g.xe+hop,u); J=poseAt(hipX,0.95+0.42*4*u*(1-u),kfPose(HOPK,u)); }
+      else if(S.sq<t3){ const u=(S.sq-t2)/(t3-t2); hipX=lerp(g.xe+hop,g.xe+hop+stp,u); J=poseAt(hipX,0.95+0.34*4*u*(1-u),kfPose(STEPK,u)); }
+      else { hipX=g.xe+hop+stp; J=runPoseAt(hipX,seqCyc(),99); }
+    } else if(S.phase==='seq'){ hipX=runX(g,p); J=runPoseAt(hipX,seqCyc(),12+p*40); }
+    else { hipX=g.xs; J=poseAt(hipX,0.93,STAND); }
+  } else if(a){
+    const u=clamp(a.t/a.dur,0,1), x0=(tj?g.xe+hop+stp:g.xe)+0.35*Math.min(1,(a.hold||0)*1.4);
+    if(a.foul||a.mark<=0){ hipX=lerp(g.xe,g.xe+3.2,ease(u)); J=u<0.8?runPoseAt(hipX,S.t*3,99,6):poseAt(hipX,0.93,STAND); }
+    else {
+      const land=a.mark-0.45, ang=a.ang!=null?a.ang:12, fx=u/0.86;
+      const pk=clamp((a.mark-(tj?hop+stp:0))*Math.tan(clamp(ang,3,60)*D2R)/4*0.6,0.35,1.4);
+      const K=tj?LJK2:LJK;
+      if(u<0.86){ hipX=lerp(x0,land,fx); J=poseAt(hipX,1.1+pk*4*fx*(1-fx)-0.15*fx,kfPose(K,u)); }
+      else { const v=(u-0.86)/0.14; hipX=land+0.25*ease(v); J=poseAt(hipX,lerp(0.95,0.48,ease(v)),kfPose(K,u)); }
+    }
+  } else { hipX=g.xs; J=poseAt(hipX,0.93,STAND); }
+  const left=hipX-W*0.36/FV.ppm;
+  if(plan) return {left};
+  // 着地の印と記録
+  if(a&&S.phase!=='seq'&&a.mark>0&&a.t/a.dur>=0.86){ const x=SX(a.mark); ctx.fillStyle='#fff'; ctx.fillRect(x-1,FV.gy-FV.h*1.2,2,FV.h*1.35); ctx.font='14px '+DISP; ctx.fillText(a.mark.toFixed(2)+'m',x,FV.gy-FV.h*1.3); }
+  if(tj&&a&&a.mark>0){ [g.xe,g.xe+hop,g.xe+hop+stp].forEach(x=>{ ctx.fillStyle='rgba(255,255,255,.35)'; ctx.fillRect(SX(x)-1,FV.gy-2,3,4); }); }
+  drawFig(J,FV.h,{shadow:SX(hipX)});
+  if(angInfo) angleArrow(angInfo[0],angInfo[1],S.ang);
+}
+
+// ---------- 走高跳（背面跳び） ----------
+const HJK=[      // 腰がバーの真上(u≈0.41)で背中を水平に反らせ、通過後に脚を振り上げる
+  [0,   {tr:-5,  legs:[{t:70,k:95},{t:-15,k:5}], arms:[{u:155,e:10},{u:150,e:10}]}],
+  [0.2, {tr:-40, legs:[{t:-15,k:70},{t:-35,k:30}],arms:[{u:115,e:20},{u:25,e:20}]}],
+  [0.41,{tr:-102,legs:[{t:-62,k:80},{t:-66,k:85}],arms:[{u:-40,e:20},{u:-45,e:20}]}],
+  [0.58,{tr:-96, legs:[{t:50,k:6},{t:47,k:8}],   arms:[{u:-15,e:10},{u:-20,e:10}]}],
+  [0.86,{tr:-80, legs:[{t:55,k:15},{t:52,k:18}], arms:[{u:20,e:10},{u:15,e:10}]}],
+  [1,   {tr:-88, legs:[{t:22,k:30},{t:20,k:32}], arms:[{u:2,e:10},{u:-2,e:10}]}]];
+const MAT_H=0.7;
+function drawBar(id,barX,barY,fallU,depth){
+  const d=(depth||0.35)*FV.ppm, sx=SX(barX), top=Math.max(barY,(id==='PV'?6.6:2.6));
+  // 奥の支柱
+  ctx.fillStyle='#9aa6ae'; ctx.fillRect(sx+d*0.6-1.5,SY(top),3,SY(0)-SY(top)-d*0.25);
+  let y=SY(barY), tilt=0;
+  if(fallU>0){ const f=Math.min(1,fallU*fallU); y=lerp(SY(barY),SY(MAT_H+(id==='PV'?0.1:0))-2,f); tilt=f*0.4; }
+  ctx.save(); ctx.translate(sx,y); ctx.rotate(-0.42+tilt); ctx.fillStyle='#f4f4f4'; ctx.fillRect(-d*0.15,-1.5,d*1.1,3); ctx.fillStyle='#d24a3c'; for(let k=0;k<4;k++) if(k%2===0) ctx.fillRect(-d*0.15+k*d*0.275,-1.5,d*0.275,3); ctx.restore();
+  ctx.fillStyle='#fff'; ctx.font='11px '+DOT; ctx.fillText(barY.toFixed(2)+'m',sx+d*1.6,SY(barY)-4);
+}
+// 成功した試技では、バーと支柱の幅の範囲で、体のどの点（関節・頭・手足の先・各部の中点）もバーより上を通るようにする。
+// 必要な持ち上げ量を試技の最初に全コマ分計算し、なめらかな山にして腰の高さへ足す（毎フレーム持ち上げるとガタつくため）
+function needOver(J,sx,barX,bar,depth){
+  const d=(depth||0.35)*FV.ppm, bx=SX(barX), by=SY(bar), tn=Math.tan(0.42), mg=FV.h*0.09, soft=0.1*FV.ppm;
+  const x0=bx-0.25*FV.ppm, x1=bx+d+0.12*FV.ppm;
+  const X=p=>J.hip[0]+(p[0]-J.hip[0])*(sx==null?1:sx);
+  const pts=[J.hip,J.sh,J.head,[J.head[0],J.head[1]-FV.h*0.07]]; J.legs.forEach(l=>{ pts.push(l.kn,l.an,[l.an[0]+Math.sin(l.fa)*FV.h*0.09,l.an[1]+Math.cos(l.fa)*FV.h*0.09]); });
+  J.arms.forEach(a=>pts.push(a.el,a.hd));
+  const seg=[[J.hip,J.sh],[J.sh,J.head]]; J.legs.forEach(l=>{ seg.push([J.hip,l.kn],[l.kn,l.an]); }); J.arms.forEach(a=>seg.push([a.sh,a.el],[a.el,a.hd]));
+  seg.forEach(([a,b])=>{ for(const t of [0.25,0.5,0.75]) pts.push([a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]); });
+  let need=0;
+  pts.forEach(p=>{ const x=X(p), w=x<x0?clamp(1-(x0-x)/soft,0,1):x>x1?clamp(1-(x-x1)/soft,0,1):1; if(w<=0) return;
+    const yb=by-(clamp(x,bx-0.15*d,bx+0.95*d)-bx)*tn-mg; need=Math.max(need,(p[1]-yb)*w); });
+  return need/FV.ppm;
+}
+function liftProfile(fn,barX,bar,depth){
+  const N=60, need=[]; for(let k=0;k<=N;k++){ const r=fn(k/N,0); need.push(r?needOver(r.J,r.sx,barX,bar,depth):0); }
+  const env=need.map((_,i)=>Math.max(...need.slice(Math.max(0,i-5),i+6)));
+  return env.map((_,i)=>{ let s=0,c=0; for(let j=-5;j<=5;j++){ const v=env[i+j]; if(v!=null){ s+=v; c++; } } return s/c; });
+}
+const liftAt=(P,u)=>{ if(!P) return 0; const f=clamp(u,0,1)*(P.length-1), i=Math.floor(f), t=f-i; return P[i]+((P[Math.min(i+1,P.length-1)])-P[i])*t; };
+function drawNearPost(barX,id){ const sx=SX(barX)-2, top=id==='PV'?6.6:2.6; ctx.fillStyle='#cfd8de'; ctx.fillRect(sx-1.5,SY(top),3.5,SY(0)-SY(top)+3); }
+function drawMat(x0,x1,hgt){ const a=SX(x0), b=SX(x1), y=SY(hgt); ctx.fillStyle='#2f5fae'; ctx.fillRect(a,y,b-a,FV.gy-y+3); ctx.fillStyle='#5d8fe0'; ctx.beginPath(); ctx.moveTo(a,y); ctx.lineTo(b,y); ctx.lineTo(b+FV.ppm*0.4,y-FV.ppm*0.25); ctx.lineTo(a+FV.ppm*0.4,y-FV.ppm*0.25); ctx.closePath(); ctx.fill(); }
+function vertBarNow(){
+  const a=S.an;
+  if(S.phase==='fly'&&a) return a.bar;
+  if(S.phase==='mark'&&a&&!a.ok) return a.bar;
+  return S.bars[Math.min(S.bi,S.bars.length-1)];
+}
+function sceneHJ(ev,id,plan){
+  const g=FG.HJ, a=S.an, bar=vertBarNow();
+  let J, hipX, sx=1, angInfo=null, fallU=0;
+  if(S.phase==='seq'||S.phase==='ready'||S.phase==='idle'){
+    if(S.holding){ const k=Math.min(1,S.holdT*1.4); hipX=g.xe+0.15*k; J=poseAt(hipX,1.0+0.12*k,HJK[0][1]); angInfo=[hipX,1.1]; }
+    else if(S.phase==='seq'){ const p=seqProgress('take'); hipX=runX(g,p); J=runPoseAt(hipX,seqCyc(),15+p*40,7.5); }
+    else { hipX=g.xs; J=poseAt(hipX,0.93,STAND); }
+  } else if(a){
+    const u=clamp(a.t/a.dur,0,1);
+    if(a.foul){ hipX=lerp(g.xe,g.xe+0.6,ease(u)); J=poseAt(hipX,0.93,STAND); }
+    else {
+      const top=a.ok?a.bar+0.15:a.bar-0.1, x0=g.xe+0.15;
+      const fly=(u,lift)=>{ let hx,J,sxx=Math.cos(Math.PI*clamp((u-0.06)/0.16,0,1));
+        if(u<0.86){ const v=u/0.86; hx=lerp(x0,0.95,v); const yA=1.12, yL=MAT_H+0.14, vp=clamp((0-x0)/(0.95-x0),0.2,0.8);
+          const y=v<vp?lerp(yA,top,1-Math.pow(1-v/vp,2)):lerp(top,yL,Math.pow((v-vp)/(1-vp),2)); J=poseAt(hx,y+lift,kfPose(HJK,u)); }
+        else { hx=0.95+0.2*ease((u-0.86)/0.14); J=poseAt(hx,MAT_H+0.13+lift,kfPose(HJK,u)); }
+        return {J,hx,sx:sxx}; };
+      if(a.ok&&!a.lift) a.lift=liftProfile(fly,0,a.bar);
+      const r=fly(u,a.ok?liftAt(a.lift,u):0); J=r.J; hipX=r.hx; sx=r.sx;
+      if(!a.ok) fallU=Math.max(0,(u-0.45)/0.4);
+    }
+  } else { hipX=g.xs; J=poseAt(hipX,0.93,STAND); }
+  if(S.phase==='mark'&&a&&!a.foul){ hipX=1.15; J=poseAt(hipX,MAT_H+0.13,HJK[5][1]); sx=-1; if(!a.ok) fallU=1; }
+  const left=Math.min(hipX-W*0.4/FV.ppm, 2.2-W*0.82/FV.ppm);
+  if(plan) return {left:Math.max(left,hipX-W*0.62/FV.ppm)};
+  drawMat(0.35,4.6,MAT_H);
+  drawBar(id,0,bar,fallU);
+  drawFig(J,FV.h,{shadow:SX(hipX),sx});
+  drawNearPost(0,id);
+  if(angInfo) angleArrow(angInfo[0],angInfo[1],S.ang);
+}
+
+// ---------- 棒高跳 ----------
+function poleCarry(hipX,p,J){       // 助走中のポール：後ろ手(上の手)とポール先端
+  const hip=[hipX,0.95], R=[hipX-0.08,1.1], al=lerp(1.05,0.05,Math.pow(Math.min(1,p/0.86),1.4));
+  const dir=[Math.cos(al),Math.sin(al)];
+  let G=R, tip=[R[0]+dir[0]*POLE_L,R[1]+dir[1]*POLE_L];
+  const b=ease(clamp((p-0.86)/0.14,0,1));                   // 最後の一歩で振り上げて突く
+  if(b>0){ const T=[hipX+0.15,2.25]; G=[lerp(R[0],T[0],b),lerp(R[1],T[1],b)]; const tipP=[0,0];
+    const tipC=[lerp(tip[0],tipP[0],b),lerp(tip[1],tipP[1],b)], dd=Math.hypot(tipC[0]-G[0],tipC[1]-G[1]); tip=[G[0]+(tipC[0]-G[0])/dd*POLE_L,G[1]+(tipC[1]-G[1])/dd*POLE_L]; }
+  return {G,tip};
+}
+function drawPole(a,b,bend){
+  const A=[SX(a[0]),SY(a[1])], B=[SX(b[0]),SY(b[1])];
+  ctx.strokeStyle='#e7c43a'; ctx.lineWidth=Math.max(2,FV.ppm*0.06); ctx.lineCap='round'; ctx.beginPath(); ctx.moveTo(A[0],A[1]);
+  if(bend){ const mx=(A[0]+B[0])/2, my=(A[1]+B[1])/2, dx=B[0]-A[0], dy=B[1]-A[1], L=Math.hypot(dx,dy)||1; ctx.quadraticCurveTo(mx+dy/L*bend*FV.ppm,my-dx/L*bend*FV.ppm,B[0],B[1]); }
+  else ctx.lineTo(B[0],B[1]);
+  ctx.stroke();
+}
+function pvVault(tau,est,bar){      // 突いてからの上昇（tau=0〜1が最高点）
+  const th0=Math.atan2(2.25,4.01), tc=clamp(tau,0,1.25), th=lerp(th0,Math.PI/2,ease(Math.min(1,tc))), bendK=Math.sin(Math.PI*clamp(tc/0.85,0,1));
+  const c=POLE_L*(1-0.27*bendK), G=[-Math.cos(th)*c,Math.sin(th)*c];
+  const s=ease(clamp((tc-0.22)/0.78,0,1)), apex=est>=bar?bar+0.3:Math.min(est,bar-0.05);
+  let hip=[lerp(G[0]-0.25,0.15,s),lerp(G[1]-1.25,apex,s)];
+  if(tau>1){ const d=clamp((tau-1)/0.25,0,1); hip=[lerp(0.15,-0.3,d),lerp(apex,apex-1.2,d*d)]; }
+  const P={tr:lerp(-15,-172,s),legs:[{t:lerp(25,8,s),k:lerp(45,10,s)},{t:lerp(5,4,s),k:lerp(15,6,s)}],arms:[{to:null},{to:null}]};
+  return {G,hip,P,bend:0.55*bendK};
+}
+function scenePV(ev,id,plan){
+  const g=FG.PV, a=S.an, bar=vertBarNow();
+  let J=null, hipX, poleA=null, poleB=null, bend=0, fallU=0, hipY=0.95;
+  const mkVault=(V)=>{ const hs=[SX(V.hip[0]),SY(V.hip[1])], Gs=[SX(V.G[0]),SY(V.G[1])]; V.P.arms=[{to:Gs},{to:[Gs[0]+(SX(0)-Gs[0])*0.13,Gs[1]+(SY(0)-Gs[1])*0.13]}]; return mkPose(hs,V.P,FV.h); };
+  if(S.phase==='seq'||S.phase==='ready'||S.phase==='idle'){
+    if(S.holding){ if(S.holding.est==null) S.holding.est=fieldEst(); const V=pvVault(S.holdT/PV_UP,S.holding.est,bar); hipX=V.hip[0]; hipY=V.hip[1]; J=mkVault(V); poleA=[0,0]; poleB=V.G; bend=V.bend; }
+    else {
+      const p=S.phase==='seq'?seqProgress('take'):0; hipX=S.phase==='seq'?runX(g,p):g.xs;
+      J=S.phase==='seq'?runPoseAt(hipX,seqCyc(),18+p*40,8):poseAt(hipX,0.93,STAND);
+      const C=poleCarry(hipX,S.phase==='seq'?Math.min(p,1):0,J); poleA=C.tip; poleB=[C.G[0]-(C.tip[0]-C.G[0])/POLE_L*0.15,C.G[1]-(C.tip[1]-C.G[1])/POLE_L*0.15];
+      const Gs=[SX(C.G[0]),SY(C.G[1])], Fs=[SX(C.G[0]+(C.tip[0]-C.G[0])*0.14),SY(C.G[1]+(C.tip[1]-C.G[1])*0.14)];
+      J.arms=[armTo(J.sh,Gs,false,FV.h),armTo(J.sh,Fs,true,FV.h)];
+    }
+  } else if(a){
+    const u=clamp(a.t/a.dur,0,1), tr=(a.pvRel||PV_UP)/PV_UP, est=Math.max(a.perf||0,0);
+    if(a.foul){ hipX=lerp(g.xe,g.xe+2.6,ease(Math.min(1,u*1.3))); J=u<0.7?runPoseAt(hipX,S.t*3,99,5):poseAt(hipX,0.93,STAND); poleA=[hipX+3.2,0.05]; poleB=[hipX-0.4,0.05]; }
+    else {
+      const V0=pvVault(tr,a.ok?a.bar+1:est,a.bar);
+      const early=a.relFail==='early', late=a.relFail==='late';
+      // 越え方：足から先にバーを越え（くの字）→腰→胸、最後に腕を振り上げて背中からマットへ
+      const ap=V0.hip[1], ok=a.ok;
+      const HX=[[0,V0.hip[0]],[0.3,ok?0.62:0.35],[0.55,ok?1.25:0.75],[0.85,1.7],[1,1.75]];
+      const HY=[[0,ap],[0.3,ap+(ok?0.1:early?-0.35:-0.1)],[0.55,ok?ap-0.08:ap-0.9],[0.85,MAT_H+0.15],[1,MAT_H+0.14]];
+      const pick=(T,u)=>{ let i=0; while(i<T.length-2&&u>T[i+1][0]) i++; const p=clamp((u-T[i][0])/(T[i+1][0]-T[i][0]),0,1), e=p*p*(3-2*p); return lerp(T[i][1],T[i+1][1],e); };
+      const KP=[[0,V0.P],
+        [0.3, {tr:-140,legs:[{t:-70,k:10},{t:-72,k:12}],arms:[{u:-150,e:10},{u:-155,e:10}]}],
+        [0.55,{tr:-100,legs:[{t:-40,k:20},{t:-42,k:22}],arms:[{u:-220,e:10},{u:-225,e:10}]}],
+        [0.85,{tr:-88, legs:[{t:-18,k:30},{t:-20,k:32}],arms:[{u:-198,e:20},{u:-202,e:20}]}],
+        [1,   {tr:-88, legs:[{t:-18,k:30},{t:-20,k:32}],arms:[{u:-198,e:20},{u:-202,e:20}]}]];
+      const fly=(u,lift)=>{ const hx=pick(HX,u), hy=pick(HY,u)+lift*(u<0.85?1:0); const P=kfPose(KP,u); P.arms=P.arms.map(x=>x.to!==undefined?{u:-150,e:10}:x);
+        return {J:mkPose([SX(hx),SY(hy)],P,FV.h),hx,hy,sx:1}; };
+      if(ok&&!a.lift) a.lift=liftProfile(fly,0.6,a.bar,0.45);
+      const r=fly(u,ok?liftAt(a.lift,u):0); J=r.J; hipX=r.hx; hipY=r.hy;
+      const pk=clamp(u/0.6,0,1), th=lerp(Math.atan2(V0.G[1],-V0.G[0]),Math.PI*0.97,ease(pk));
+      poleA=[0,0]; poleB=[Math.cos(th)*POLE_L,Math.sin(th)*POLE_L];
+      if(!a.ok) fallU=Math.max(0,(u-0.25)/0.45);
+    }
+  } else { hipX=g.xs; J=poseAt(hipX,0.93,STAND); }
+  if(S.phase==='mark'&&a&&!a.foul){ hipX=1.75; hipY=MAT_H+0.14; J=poseAt(hipX,hipY,{tr:-88,legs:[{t:-18,k:30},{t:-20,k:32}],arms:[{u:-198,e:20},{u:-202,e:20}]}); poleA=[0,0]; poleB=[-POLE_L*0.99,0.15]; if(!a.ok) fallU=1; }
+  const left=Math.min(hipX-W*0.42/FV.ppm, 3.2-W/FV.ppm);
+  if(plan) return {left:Math.max(left,hipX-W*0.7/FV.ppm)};
+  // ボックス・マット・支柱
+  ctx.fillStyle='#3a3f45'; ctx.beginPath(); ctx.moveTo(SX(-1.0),FV.gy); ctx.lineTo(SX(0),FV.gy+FV.ppm*0.2); ctx.lineTo(SX(0.05),FV.gy); ctx.fill();
+  drawMat(0.35,5.6,MAT_H+0.1);
+  drawBar(id,0.6,bar,fallU,0.45);
+  if(poleA) drawPole(poleA,poleB,bend);
+  drawFig(J,FV.h,{shadow:SX(hipX),sh:hipY>1.5?0.6:1});
+  drawNearPost(0.6,id);
+}
+
+// ---------- 投てき ----------
+const SPGLIDE=[
+  [0,   {tr:5, legs:[{t:3,k:6},{t:-3,k:6}],arms:[{u:150,e:-150},{u:30,e:10}]}],
+  [0.22,{tr:55,legs:[{t:55,k:12},{t:-30,k:4}],arms:[{u:150,e:-150},{u:110,e:5}]}],     // T字：上体を倒し自由脚を後ろへ
+  [0.48,{tr:70,legs:[{t:95,k:115},{t:85,k:125}],arms:[{u:150,e:-150},{u:95,e:5}]}],    // かがむ（膝と膝を寄せる）
+  [0.72,{tr:60,legs:[{t:65,k:20},{t:-15,k:8}],arms:[{u:150,e:-150},{u:90,e:5}]}],      // グライド：両脚を伸ばして後方へ滑る
+  [1,   {tr:40,legs:[{t:80,k:70},{t:5,k:30}],arms:[{u:150,e:-150},{u:85,e:5}]}]];      // 着地＝パワーポジション（まだ後ろ向き）
+const SPK={crouch:{tr:60,legs:[{t:80,k:100},{t:20,k:12}],arms:[{u:150,e:-150},{u:100,e:0}]},
+  power:{tr:-15,legs:[{t:20,k:20},{t:-45,k:55}],arms:[{u:150,e:-150},{u:95,e:0}]},
+  rev:{tr:35,legs:[{t:-10,k:20},{t:55,k:30}],arms:[{u:105,e:10},{u:5,e:20}]}};
+function sceneThrow(ev,id,plan){
+  const g=FG[id], a=S.an, h=FV.h;
+  let J=null, hipX=0, sx=1, item=null, ang=null, hipY=0.95, ppmF=null, left;
+  const p=S.phase==='seq'?seqProgress('rel'):0, nr=S.rings.filter(r=>r.k==='run').length||1;
+  const cyc=S.phase==='seq'?seqCyc():0;
+  const relU=a?clamp(a.t/a.dur,0,1):0;
+  const holding=!!S.holding, flying=S.phase!=='seq'&&!!a&&!a.foul&&a.mark>0;
+  const throwAng=holding?S.ang:(a&&a.ang!=null?a.ang:35);
+  if(id==='JT'){
+    if(S.phase==='seq'&&!holding){ hipX=runX(g,Math.min(p,1)); J=runPoseAt(hipX,cyc,99,7);
+      const wd=clamp((cyc-(nr-2))/1.5,0,1);                        // 最後の2歩でやりを引く
+      if(wd>0){ const dy=FV.ppm*0.06*wd; J.hip[1]+=dy; J.legs.forEach(l=>{ l.kn[1]+=dy*0.5; }); }   // クロスステップで腰を落とす
+      reTrunk(J,lerp(12,-28,wd),h);
+      const hand=wd>0?[J.sh[0]-h*0.3*wd+h*0.04*(1-wd),J.sh[1]-h*0.1*(1-wd)+h*0.02*wd]:[J.sh[0]+h*0.04,J.sh[1]-h*0.1];
+      J.arms[0]=armTo(J.sh,hand,false,h,-1); item={x:hand[0],y:hand[1],a:-(8+14*wd)*D2R,L:2.6};
+    } else if(holding||(a&&relU<0.12)){
+      hipX=g.xe; const k=holding?Math.min(1,S.holdT*2):1;
+      const P0={tr:-25,legs:[{t:15,k:5},{t:-50,k:50}],arms:[{u:0,e:0},{u:75,e:20}]};
+      J=poseAt(hipX,0.92,P0);
+      if(holding){ const hd=[J.sh[0]-h*0.32,J.sh[1]+h*0.02]; J.arms[0]=armTo(J.sh,hd,false,h,-1); item={x:hd[0],y:hd[1],a:-throwAng*D2R,L:2.6}; }
+      else { const v=relU/0.12; J=poseAt(hipX,0.92,lerpP(P0,{tr:25,legs:[{t:20,k:5},{t:-30,k:30}],arms:[{u:0,e:0},{u:15,e:60}]},v));
+        const r=h*0.31, a2=lerp(Math.PI+0.3,-throwAng*D2R,ease(v)); J.arms[0]=armTo(J.sh,[J.sh[0]+Math.cos(a2)*r,J.sh[1]+Math.sin(a2)*r],false,h,-1); }
+    } else if(a){ hipX=g.xe+0.5*ease(clamp((relU-0.12)/0.3,0,1)); J=poseAt(hipX,0.9,{tr:40,legs:[{t:60,k:30},{t:70,k:40}],arms:[{u:90,e:10},{u:10,e:40}]}); }
+    else { hipX=g.xs; J=poseAt(hipX,0.93,STAND); item={x:SX(hipX)+h*0.05,y:SY(1.65),a:-0.15,L:2.6,scr:true}; }
+    if(item&&!item.scr) item.scr=true;
+  } else {
+    const c=g.c;
+    if(id==='SP'){
+      if(S.phase==='seq'&&!holding){ const k=clamp(cyc/nr,0,1); sx=-1;     // 後ろ向き：T字バランス→かがむ→グライド→パワーポジション
+        hipX=lerp(c-0.78,c+0.2,ease(clamp((k-0.55)/0.4,0,1)));
+        const yH=k<0.2?lerp(0.93,0.86,k/0.2):k<0.5?lerp(0.86,0.6,(k-0.2)/0.3):k<0.8?lerp(0.6,0.66,(k-0.5)/0.3):0.68;
+        J=poseAt(hipX,yH,kfPose(SPGLIDE,k)); }
+      else if(holding){ hipX=c+0.3; const k=Math.min(1,S.holdT*3); sx=lerp(-1,1,ease(k)); J=poseAt(hipX,0.8,SPK.power); }
+      else if(a&&relU<0.14){ hipX=c+0.35; const v=relU/0.14; J=poseAt(hipX,lerp(0.8,1.0,v),lerpP(SPK.power,{tr:20,legs:[{t:30,k:5},{t:-5,k:5}],arms:[{u:0,e:0},{u:0,e:40}]},v));
+        const r=h*0.31*lerp(0.35,1,v), aa=-throwAng*D2R; J.arms[0]=armTo(J.sh,[J.sh[0]+Math.cos(aa)*r,J.sh[1]+Math.sin(aa)*r],false,h,-1); }
+      else if(a){ hipX=c+0.45; J=poseAt(hipX,0.85,SPK.rev); }
+      else { hipX=c-0.75; sx=-1; J=poseAt(hipX,0.93,STAND); }
+      const mir=x=>J.hip[0]+(x-J.hip[0])*sx;
+      if(!(a&&relU>=0.1)&&S.phase!=='mark'){
+        if(a){ const hd=handScr(J,sx,false); item={x:hd[0],y:hd[1],shot:true}; }
+        else { const neck=[J.head[0]+h*0.06,J.head[1]+h*0.09]; J.arms[0]=armTo(J.sh,neck,false,h); item={x:mir(neck[0]),y:neck[1],shot:true}; } }
+    } else {
+      // 円盤：予備スイング2回→1回転半／ハンマー：頭上の予備旋回2回→回転3回（だんだん速く）。sx=cosφで回転を見せる
+      const k=S.phase==='seq'?clamp(cyc/nr,0,1.05):holding?1:a?1:0;
+      const pre=id==='DT'?0.4:0.38, turns=id==='DT'?1.5:3;
+      const kt=clamp((k-pre)/(1-pre),0,1.05), kp=clamp(k/pre,0,1);
+      let phi=Math.PI+2*Math.PI*turns*(id==='HT'?Math.pow(kt,1.3):kt);
+      if(holding) phi+=S.holdT*0.8; if(a&&relU<0.12) phi+=relU*6;
+      sx=k<pre?-1+0.25*Math.sin(kp*Math.PI*4)*0.6:Math.cos(phi); hipX=lerp(c-0.75,c+0.35,ease(Math.min(1,kt)));
+      const st=Math.sin(phi*2);
+      if(id==='DT'){
+        if(k<pre){ const sw=Math.sin(kp*Math.PI*4);           // 腕を後ろ⇔前に大きく振る
+          J=poseAt(hipX,0.9,{tr:8,legs:[{t:12,k:15},{t:-12,k:15}],arms:[{u:lerp(-95,50,(sw+1)/2),e:5},{u:70,e:30}]}); }
+        else J=poseAt(hipX,0.84,{tr:18,legs:[{t:30+15*st,k:48},{t:-10-15*st,k:38}],arms:[{u:-85,e:0},{u:95,e:30}]});
+        if(!(a&&relU>=0.1)&&S.phase!=='mark'){ const hd=handScr(J,sx,false); item={x:hd[0],y:hd[1],disc:true,scr:true,sx}; }
+      } else {
+        const R=1.55;
+        if(k<pre){ const psi=kp*Math.PI*4+Math.PI*0.5;        // 予備旋回：体は止めたまま、球が頭上を回る
+          J=poseAt(hipX,0.88,{tr:-8,legs:[{t:14,k:20},{t:-14,k:20}],arms:[{u:0,e:0},{u:0,e:0}]});
+          const bl=[J.hip[0]+Math.cos(psi)*FV.ppm*1.0,SY(1.45-0.85*Math.sin(psi))];
+          J.arms=[armTo(J.sh,[lerp(J.sh[0],bl[0],0.5),lerp(J.sh[1],bl[1],0.5)],false,h,0.3),armTo(J.sh,[lerp(J.sh[0],bl[0],0.5),lerp(J.sh[1],bl[1],0.5)+2],true,h,0.3)];
+          if(S.phase!=='mark'){ const hs=handScr(J,sx,false); item={x:J.hip[0]+(bl[0]-J.hip[0])*sx,y:bl[1],ham:true,scr:true,hx:hs[0],hy:hs[1]}; }
+        } else {
+          J=poseAt(hipX,0.82,{tr:-18,legs:[{t:22+12*st,k:42},{t:-6-12*st,k:36}],arms:[{u:0,e:0},{u:0,e:0}]});
+          const by=1.05-0.8*Math.cos(phi-0.6), loc=[J.hip[0]+R*FV.ppm*0.55,SY(by*0.6+0.5)];
+          J.arms=[armTo(J.sh,loc,false,h,0.3),armTo(J.sh,[loc[0],loc[1]+2],true,h,0.3)];
+          if(!(a&&relU>=0.1)&&S.phase!=='mark'){ const hs=handScr(J,sx,false); item={x:SX(hipX)+R*Math.cos(phi)*FV.ppm,y:SY(by),ham:true,scr:true,hx:hs[0],hy:hs[1]}; }
+        }
+      }
+      if(S.phase==='idle'||S.phase==='ready'){ sx=-1; }
+      if(a&&relU>=0.12&&S.phase!=='seq'){ J=poseAt(hipX,0.9,{tr:10,legs:[{t:10,k:10},{t:-10,k:12}],arms:[{u:60,e:10},{u:40,e:10}]}); sx=id==='HT'?-1:1; }
+    }
+  }
+  // 飛翔（放物線：リリース点→記録地点）
+  let fly=null;
+  if(flying&&relU>=0.1){
+    const x0=(id==='JT'?g.xe:g.c)+0.5, y0=REL_H[id], L=a.mark, An=clamp(throwAng,2,70)*D2R;
+    const kk=(y0+Math.tan(An)*(L-x0))/Math.pow(L-x0,2), v=clamp((relU-0.1)/0.75,0,1), x=lerp(x0,L,v), y=Math.max(0,y0+Math.tan(An)*(x-x0)-kk*Math.pow(x-x0,2));
+    const slope=Math.tan(An)-2*kk*(x-x0); fly={x,y,a:-Math.atan(slope),landed:v>=1};
+    const ymax=y0+Math.tan(An)*Math.tan(An)/(4*kk);
+    ppmF=Math.min(FV.ppm,W*0.86/(L+5),(FV.gy-26)/(ymax+0.6)); const z=ease(clamp((relU-0.08)/0.3,0,1));
+    FV.ppm=lerp(FV.ppm,ppmF,z); FV.h=1.85*FV.ppm;
+  }
+  if(S.phase==='mark'&&a&&a.mark>0){ const L=a.mark; ppmF=Math.min(FV.ppm,W*0.86/(L+5)); FV.ppm=ppmF; FV.h=1.85*ppmF; }
+  const follow=id==='JT'?Math.min(hipX,g.xe)-W*0.4/FV.ppm:g.c-W*0.3/FV.ppm;
+  left=(ppmF&&(fly||S.phase==='mark'))?lerp(follow,-3.2,ease(clamp(((S.phase==='mark'?1:relU)-0.08)/0.3,0,1))):follow;
+  if(plan) return {left,ppm:FV.ppm};
+  // 人物と道具（ズームで人物の大きさが変わるので描画時に組み直す）
+  if(ppmF&&(fly||S.phase==='mark')){ const P={tr:10,legs:[{t:10,k:10},{t:-10,k:12}],arms:[{u:60,e:10},{u:40,e:10}]}; J=poseAt(hipX,0.92,id==='SP'?SPK.rev:P); item=null; }
+  drawFig(J,FV.h,{shadow:SX(hipX),sx});
+  const hh2=FV.h;
+  if(item){
+    if(item.shot){ ctx.fillStyle='#d8d8d8'; ctx.beginPath(); ctx.arc(item.x,item.y,hh2*0.045,0,7); ctx.fill(); }
+    else if(item.disc){ ctx.fillStyle='#e6e6e6'; ctx.beginPath(); ctx.ellipse(item.x,item.y,hh2*0.07*Math.max(0.3,Math.abs(item.sx||1)),hh2*0.025,0,0,7); ctx.fill(); }
+    else if(item.ham){ ctx.strokeStyle='rgba(220,220,220,.8)'; ctx.lineWidth=1.2; ctx.beginPath(); ctx.moveTo(item.hx,item.hy); ctx.lineTo(item.x,item.y); ctx.stroke(); ctx.fillStyle='#cfcfcf'; ctx.beginPath(); ctx.arc(item.x,item.y,hh2*0.045,0,7); ctx.fill(); }
+    else { const Lp=item.L*FV.ppm; ctx.strokeStyle='#eee'; ctx.lineWidth=Math.max(1.8,FV.ppm*0.045); ctx.beginPath(); ctx.moveTo(item.x-Math.cos(item.a)*Lp*0.45,item.y-Math.sin(item.a)*Lp*0.45); ctx.lineTo(item.x+Math.cos(item.a)*Lp*0.55,item.y+Math.sin(item.a)*Lp*0.55); ctx.stroke(); }
+  }
+  if(fly){
+    const fx=SX(fly.x), fy=SY(fly.y);
+    if(id==='JT'){ const Lp=2.6*FV.ppm; ctx.strokeStyle='#eee'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(fx-Math.cos(fly.a)*Lp*0.5,fy-Math.sin(fly.a)*Lp*0.5); ctx.lineTo(fx+Math.cos(fly.a)*Lp*0.5,fy+Math.sin(fly.a)*Lp*0.5); ctx.stroke(); }
+    else if(id==='DT'){ ctx.fillStyle='#eee'; ctx.beginPath(); ctx.ellipse(fx,fy,Math.max(3,FV.ppm*0.12),Math.max(1.5,FV.ppm*0.04),fly.a*0.3,0,7); ctx.fill(); }
+    else { ctx.fillStyle='#ddd'; ctx.beginPath(); ctx.arc(fx,fy,Math.max(2.5,FV.ppm*(id==='SP'?0.07:0.06)),0,7); ctx.fill(); if(id==='HT'&&!fly.landed){ ctx.strokeStyle='rgba(220,220,220,.6)'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(fx,fy); ctx.lineTo(fx-Math.cos(fly.a)*FV.ppm*1.2,fy-Math.sin(fly.a)*FV.ppm*1.2); ctx.stroke(); } }
+  }
+  if(a&&S.phase!=='seq'&&a.mark>0&&(S.phase==='mark'||(fly&&fly.landed))){ const x=SX(a.mark); ctx.fillStyle='#fff'; ctx.fillRect(x-1,FV.gy-40,2,44); ctx.font='14px '+DISP; ctx.fillText(a.mark.toFixed(2)+'m',x,FV.gy-46); }
+  if(a&&a.foul&&S.phase!=='seq'){ ctx.fillStyle='#ff6b5b'; ctx.font='14px '+DISP; ctx.fillText('FOUL',SX(0)+40,FV.gy-FV.h*1.1); }
+  if(S.wind){ const sy=Math.max(52,H*0.24)+16, wx=W-14; ctx.textAlign='right'; ctx.fillStyle='#5fd0e6'; ctx.font='12px '+DOT;
+    ctx.fillText((S.wind>0?'追い風 →':'← 向かい風')+' '+Math.abs(S.wind).toFixed(1)+'m/s',wx,sy); ctx.textAlign='center'; }
+  if(holding){ const hp=handScr(J,sx,false); angleArrowScr(id==='JT'?J.sh[0]:hp[0],id==='JT'?J.sh[1]:hp[1],S.ang); }
+}
+function angleArrowScr(sx0,sy0,ang){
+  const L=1.5*FV.ppm, a=-ang*D2R;
+  ctx.strokeStyle='rgba(255,255,255,.25)'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(sx0,sy0); ctx.lineTo(sx0+L*1.1,sy0); ctx.stroke();
+  ctx.strokeStyle='#ffb547'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(sx0,sy0); ctx.lineTo(sx0+Math.cos(a)*L,sy0+Math.sin(a)*L); ctx.stroke();
+  ctx.beginPath(); ctx.arc(sx0,sy0,L*0.45,a,0); ctx.stroke();
+  ctx.fillStyle='#ffb547'; ctx.font='16px '+DISP; ctx.fillText(Math.round(ang)+'°',sx0+L*0.8,sy0-L*0.2);
+}
+
+// ===== 46-metrics.js : 種目ごとの必要要素（メモ準拠）と、要素ごとの計測値 =====
+const EL={
+  '100m':['リズムタップ','反応','リズム維持','失速管理'], '200m':['リズムタップ','反応','リズム維持','失速管理'],
+  '400m':['序盤の抑え','終盤の粘り','リズム維持'], '110mH':['JUMPタイミング','ハードル後の速度維持','リズム'], '100mH':['JUMPタイミング','ハードル後の速度維持','リズム'],
+  '400mH':['JUMPタイミング','序盤の抑え','終盤の粘り'], '4x100m':['加速の維持','BATONタイミング'],
+  '800m':['ペース維持','突っ込み回避','ラストの余力'], '1500m':['ペース維持','突っ込み回避','ラストの余力'],
+  '3000mSC':['ペース維持','障害・水濠JUMP','余力'], '5000m':['ペース維持','突っ込み回避','ラストの余力'], '10000m':['ペース維持','突っ込み回避','ラストの余力'],
+  '4x400m':['ペース維持','BATON','余力'], 'marathon':['ペース維持','突っ込み回避','終盤の余力'], '20kmW':['ペース維持','警告管理（3枚でDQ）'],
+  'HJ':['助走速度','踏切精度','踏切角（長押し）'], 'PV':['助走速度','突くタイミング','離すタイミング'], 'LJ':['助走速度','踏切線（ファウル）','踏切角（長押し）'], 'TJ':['助走速度','踏切線（ファウル）','ホップ・ステップ・ジャンプ','踏切角（長押し）'],
+  'SP':['パワー','リリース','角度（長押し）','ファウル回避'], 'DT':['パワー','リリース','角度（長押し）','風','ファウル回避'], 'JT':['パワー','リリース','角度（長押し）','風','ファウル回避'],
+  'HT':['パワー','回転数','リリース','角度（長押し）','ファウル回避'], 'decathlon':['合計得点','安定感'], 'heptathlon':['合計得点','安定感'] };
+const avgOf=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:null;
+const mm=(l,v)=>v==null||(typeof v==='number'&&!isFinite(v))?'':`<span>${l}<b>${v}</b></span>`;
+const sgn=(x,d)=>(x>=0?'+':'−')+Math.abs(x).toFixed(d);
+const tmark=(ms)=>ms==null?null:Math.abs(ms)<5?'ぴったり':(ms<0?'早め':'遅め');
+function msTxt(errs){ const e=errs.filter(x=>x!=null); if(!e.length) return null; const a=avgOf(e.map(Math.abs))*1000, b=avgOf(e)*1000; return Math.round(a)+'ms'+(Math.abs(b)>=5?'（'+tmark(b)+'）':''); }
+function copyLog(ev){
+  const txt=JSON.stringify(evSave(ev.id).log||[]);
+  try{ navigator.clipboard.writeText(txt).then(()=>{ const b=$('rLog'); if(b) b.textContent='コピーしました'; },()=>{}); }catch(e){}
+}
+function pushLog(ev,pos,val,m,sub){
+  const sv=evSave(ev.id), L=sv.log||(sv.log=[]);
+  L.push({t:Date.now(),cup:RUN.cup,pos,val,sub:sub||null,m:m||null}); while(L.length>30) L.shift();
+}
+
+// ---- タップ走（短距離・ハードル・リレー）
+function physMetrics(){
+  const me=S.runners[ME], D=S.D, fin=me.fin, M={}, h=[], ev=S.ev;
+  if(fin==null||fin<=0) return {html:'',m:null};
+  const hits=S.cnt.P+S.cnt.G+S.cnt.O; M.tps=+(hits/fin).toFixed(2);
+  const sp=S.spl.slice(0,3); while(sp.length<3) sp.push(fin); sp.push(fin);
+  M.spl=sp.map((x,i)=>+(x-(i?sp[i-1]:0)).toFixed(2));
+  if(S.t80!=null&&fin>S.t80&&S.maxV>0){ M.fade=+Math.max(0,1-(0.2*D/(fin-S.t80))/S.maxV).toFixed(3); }
+  if(D>=400&&!ev.leg) M.half=+(sp[1]/fin).toFixed(3);
+  if(S.errs.length){ M.err=Math.round(avgOf(S.errs.map(Math.abs))*1000); M.bias=Math.round(avgOf(S.errs)*1000); }
+  M.react=me.rt;
+  const gs=S.gates.filter(g=>g.done);
+  const gH=gs.filter(g=>g.kind==='H'), gB=gs.filter(g=>g.kind==='B');
+  if(gH.length){ const e=gH.filter(g=>g.err!=null).map(g=>g.err); M.jerr=e.length?Math.round(avgOf(e.map(Math.abs))*1000):null;
+    const k=gH.filter(g=>g.vb&&g.va).map(g=>g.va/g.vb); if(k.length) M.keep=+avgOf(k).toFixed(3); M.hmiss=gH.filter(g=>g.res==='M').length; }
+  if(gB.length){ const e=gB.filter(g=>g.err!=null).map(g=>g.err); M.berr=e.length?Math.round(avgOf(e.map(Math.abs))*1000):null;
+    const k=gB.filter(g=>g.vb&&g.va).map(g=>g.va/g.vb); if(k.length) M.keep=+avgOf(k).toFixed(3); }
+  const lab=ev.leg?'走者別':'¼ごと';
+  h.push(mm('秒間タップ',M.tps.toFixed(1)+'回'));
+  if(M.err!=null) h.push(mm('タップのズレ',M.err+'ms'+(Math.abs(M.bias)>=5?'（'+tmark(M.bias)+'）':'')));
+  h.push(mm('区間 '+lab,M.spl.map(x=>x.toFixed(2)).join(' / ')));
+  if(M.fade!=null) h.push(mm('終盤の失速',(M.fade*100).toFixed(1)+'%'));
+  if(M.half!=null) h.push(mm('前半の割合',(M.half*100).toFixed(1)+'%（50%＝イーブン）'));
+  if(gH.length){ h.push(mm('JUMPのズレ',M.jerr!=null?M.jerr+'ms':'-')); if(M.keep!=null) h.push(mm('ハードル後の速度維持',(M.keep*100).toFixed(0)+'%')); }
+  if(gB.length){ h.push(mm('BATONのズレ',M.berr!=null?M.berr+'ms':'-')); if(M.keep!=null) h.push(mm('受け渡し後の速度維持',(M.keep*100).toFixed(0)+'%')); }
+  return {html:h.join(''),m:M};
+}
+
+// ---- ペース配分走
+function distMetrics(){
+  const me=S.runners[ME], sim=S.sim, P=sim.P, d=S.dm, M={}, h=[], fin=me.fin;
+  if(fin==null||fin<=0) return {html:'',m:null};
+  const sp=d.spl.slice(0,3); while(sp.length<3) sp.push(fin); sp.push(fin);
+  M.spl=sp.map((x,i)=>+(x-(i?sp[i-1]:0)).toFixed(1));
+  if(d.n) M.dev=+(d.dev/d.n).toFixed(3);
+  if(d.rn) M.rash=+(d.rash/d.rn).toFixed(3);
+  if(d.t90!=null&&fin>d.t90){ M.kick=+(((0.1*S.D)/(fin-d.t90))/(S.D/fin)-1).toFixed(3); M.w90=+Math.max(0,d.w90).toFixed(3); }
+  M.wEnd=+Math.max(0,sim.W/P.W).toFixed(3); M.wMin=+Math.max(0,S.minW/P.W).toFixed(3);
+  const gs=S.gates.filter(g=>g.done);
+  if(gs.length){ const e=gs.filter(g=>g.err!=null).map(g=>g.err); M.jerr=e.length?Math.round(avgOf(e.map(Math.abs))*1000):null; M.gmiss=gs.filter(g=>g.res==='M').length; }
+  if(S.ev.walk) M.cards=sim.cards;
+  const f=x=>sgn(x*100,1)+'%';
+  if(M.dev!=null) h.push(mm('ペースの乱れ',(M.dev*100).toFixed(1)+'%'));
+  if(M.rash!=null) h.push(mm('序盤の突っ込み',f(M.rash)));
+  h.push(mm('区間 '+(S.ev.legs?'走者別':'¼ごと'),M.spl.map(x=>S.ev.D>=3000?fmtTime(x):x.toFixed(1)).join(' / ')));
+  if(M.kick!=null) h.push(mm('ラスト10%の速さ',f(M.kick)+'（平均比）'),mm('その時の余力',(M.w90*100).toFixed(0)+'%'));
+  h.push(mm('ゴール時の余力',(M.wEnd*100).toFixed(0)+'%'),mm('最小の余力',(M.wMin*100).toFixed(0)+'%'));
+  if(gs.length) h.push(mm(S.ev.water?'障害・水濠JUMPのズレ':'BATONのズレ',M.jerr!=null?M.jerr+'ms':'-'));
+  if(S.ev.walk) h.push(mm('警告',M.cards+'枚'));
+  return {html:h.join(''),m:M};
+}
+
+// ---- 跳躍・投てき
+function fieldMetrics(){
+  const ev=S.ev, id=ev.baseId||ev.id, A=S.am, M={}, h=[], throws=S.fk==='throw';
+  if(!A.length) return {html:'',m:null};
+  const runs=A.map(a=>a.run); M.run=+avgOf(runs).toFixed(3);
+  M.foul=A.filter(a=>a.foul).length; M.n=A.length;
+  const kinds={}; A.forEach(a=>{ for(const k in a.rerr){ if(a.rerr[k]!=null) (kinds[k]=kinds[k]||[]).push(a.rerr[k]); } });
+  M.err={}; for(const k in kinds) if(k!=='ang') M.err[k]=Math.round(avgOf(kinds[k].map(Math.abs))*1000);
+  M.bias={}; for(const k in kinds) M.bias[k]=Math.round(avgOf(kinds[k])*1000);
+  h.push(mm('助走リズム',(M.run*100).toFixed(0)+'%'));
+  if(id==='HT'){ M.turn=+avgOf(A.map(a=>a.runHit)).toFixed(1); h.push(mm('回転の成功',M.turn.toFixed(1)+'/'+(S.rings.filter(r=>r.k==='run').length)+'回転')); }
+  const lab=S.rlab;
+  for(const k in kinds){
+    if(k==='ang') continue;
+    if(k==='take'&&S.fk==='horiz'){ const fs=A.filter(a=>a.takeF!=null&&!a.line).map(a=>-a.takeF); M.lineFoul=A.filter(a=>a.line).length;
+      if(fs.length){ M.takeCm=Math.round(avgOf(fs)*100); h.push(mm('踏切線の手前',M.takeCm+'cm（その分ロス）')); }
+      h.push(mm('踏切線ファウル',M.lineFoul+'回')); }
+    else if(k==='take'&&!throws){ const cm=Math.round(avgOf(kinds[k].map(x=>Math.abs(x)))*1000);   // 約10m/sで進む想定: 1ms≒1cm
+      const b=Math.round(avgOf(kinds[k])*1000); M.takeCm=cm; h.push(mm('踏切の位置ずれ',cm+'cm'+(Math.abs(b)>=5?'（'+(b<0?'手前':'超え気味')+'）':''))); }
+    else h.push(mm((lab[k]||k)+'のズレ',M.err[k]+'ms'+(Math.abs(M.bias[k])>=5?'（'+(M.bias[k]<0?'早め':'遅め')+'）':'')));
+  }
+  const angs=A.map(a=>a.ang).filter(x=>x!=null);
+  if(angs.length&&ANG_OPT[id]!=null){ M.ang=+avgOf(angs).toFixed(1); const af=A.filter(a=>a.ang!=null).map(a=>a.angF); M.angF=+avgOf(af).toFixed(3);
+    h.push(mm((throws?'射出角':'踏切角')+'（目安'+ANG_OPT[id]+'°）','平均'+M.ang.toFixed(0)+'°'),mm('角度による記録の増減',(M.angF>=0.9995?'±0':'−'+((1-M.angF)*100).toFixed(1))+'%')); }
+  const ws=A.map(a=>a.wind).filter(x=>x); if(ws.length){ M.wind=+avgOf(ws).toFixed(1); h.push(mm('風（平均）',(M.wind>0?'+':'')+M.wind.toFixed(1)+'m/s')); }
+  h.push(mm('ファウル',M.foul+'/'+M.n+'回'));
+  return {html:h.join(''),m:M};
+}
+
+// ---- 導入画面の要素チップ
+function elChips(ev){ const id=ev.baseId||ev.id, a=EL[id]||[]; return a.map(x=>`<i>${x}</i>`).join(''); }
+
+// ===== 50-flow.js : 大会進行（予選→決勝・混成競技）と結果画面 =====
+function roundsOfTier(ev,t){
+  if(ev.eng==='combo'||ev.eng==='field') return [R_F];
+  if(ev.rd==='sprint') return t===0?[R_HEAT,R_F]:t<3?[R_HEAT,R_SF,R_F]:[R_HEAT,R_QF,R_SF,R_F];
+  if(ev.rd==='mid') return t===0?[R_F]:t<3?[R_HEAT,R_F]:[R_HEAT,R_SF,R_F];
+  return [R_F];
+}
+const engKind=ev=>ev.eng==='phys'?'phys':ev.eng==='dist'?'dist':'field';
+function openTier(i){
+  RUN.cup=i; RUN.ri=0; RUN.combo=null;
+  if(RUN.ev.eng==='combo'){
+    const looks=[]; for(let k=0;k<LANES;k++) looks.push(makeLook(k,k===ME,!!RUN.ev.hep));
+    RUN.combo={idx:0,tot:Array(LANES).fill(0),parts:Array.from({length:LANES},()=>[]),
+      persist:{names:shuffle([...POOLS[TIERS[i].pool]]).slice(0,7),spreads:shuffle([0,1,2,3,4,5,6].map(j=>j/6*0.055)),looks},tp:0};
+  }
+  prepareRound(); go('scRace');
+}
+function buildEntries(ev,tier,left,persist){
+  const names=persist?persist.names:shuffle([...POOLS[TIERS[tier].pool]]).slice(0,7);
+  const opp=makeOpponents(ev,tier,left,names,persist?persist.spreads:undefined);
+  const out=[]; let k=0;
+  for(let i=0;i<LANES;i++){
+    const look=persist?persist.looks[i]:makeLook(i,i===ME,ev.id==='100mH');
+    if(i===ME){ out.push({name:'あなた',me:true,look}); continue; }
+    const o=opp[k++]; o.look=look; out.push(o);
+  }
+  return out;
+}
+function roundLabel(){
+  const r=RUN.rounds[RUN.ri];
+  if(RUN.combo) return `${RUN.cur.comboName}（${RUN.combo.idx+1}/${RUN.ev.list.length}）`;
+  return r.groups?`${r.name} ${RUN.heat}組`:r.name;
+}
+function prepareRound(){
+  const ev=RUN.ev;
+  if(ev.eng==='combo'){ const c=RUN.combo; c.sub=subEvent(ev,c.idx); RUN.cur=c.sub; RUN.rounds=[R_F]; RUN.ri=0; RUN.entries=buildEntries(c.sub,RUN.cup,0,c.persist); }
+  else { RUN.cur=ev; RUN.rounds=roundsOfTier(ev,RUN.cup); RUN.entries=buildEntries(ev,RUN.cup,RUN.rounds.length-1-RUN.ri); }
+  const r=RUN.rounds[RUN.ri]; RUN.heat=r.groups?1+Math.floor(Math.random()*r.groups):0;
+  S=ENGS[engKind(RUN.cur)].create(); confetti=[];
+  const c=TIERS[RUN.cup]; $('tCup').textContent=c.name+'　'+RUN.ev.name; $('tRound').textContent=roundLabel();
+  show('',''); showIntro();
+}
+function nextName(){ return RUN.ri+1<RUN.rounds.length?RUN.rounds[RUN.ri+1].name:''; }
+function showIntro(){
+  const c=TIERS[RUN.cup], ev=RUN.cur, r=RUN.rounds[RUN.ri];
+  $('iCup').textContent=c.name+' / '+RUN.ev.name;
+  if(RUN.combo) $('iRound').innerHTML=`<em>${ev.comboName}</em>`;
+  else $('iRound').innerHTML=r.groups?`${r.name} <em>${RUN.heat}組</em>`:`<em>${r.name}</em>`;
+  let rule;
+  if(RUN.combo) rule=`${RUN.combo.idx+1}/${RUN.ev.list.length}種目め　合計得点で順位`;
+  else if(ev.eng==='field') rule=ev.kind==='vert'?'3回連続失敗で終了（パスも可）':`${ev.tries}回の試技　最高記録で順位`;
+  else rule=r===R_F?'3位以内でメダル・次の大会へ':`上位${r.q}着 → ${nextName()}`;
+  $('iRule').textContent=rule; $('iEl').innerHTML=elChips(ev)+(RUN.combo?'<i>'+RUN.ev.name+'：合計得点・安定感</i>':'');
+  const mine=evSave(RUN.ev.id).pb[RUN.cup];
+  $('iList').innerHTML=RUN.entries.map((e,i)=>{
+    const sbv=e.me?(RUN.combo?null:mine):e.sb;
+    const t=ev.eng==='field'&&ev.kind==='vert'&&!e.me?'SB '+fmtVal(ev,e.sb):(sbv!=null?'SB '+fmtVal(ev,sbv):'SB --');
+    const tot=RUN.combo?`<td class="pts">${RUN.combo.tot[i]}点</td>`:'';
+    return `<tr class="${e.me?'me':''}"><td class="ln">${i+1}</td><td class="nm"><span class="sw" style="background:${JERSEY[i]}"></span>${e.name}</td>${tot}<td class="t">${t}</td></tr>`;
+  }).join('');
+  $('iGo').textContent=ev.eng==='field'?'競技開始':'位置につく';
+  $('result').hidden=true; $('intro').hidden=false;
+}
+$('iGo').onclick=()=>{ $('intro').hidden=true; audio(); S=ENGS[engKind(RUN.cur)].create(); ENGS[engKind(RUN.cur)].start(); };
+function reIntro(){ S=ENGS[engKind(RUN.cur)].create(); confetti=[]; show('',''); showIntro(); }
+function btn(label,fn,main){ const b=document.createElement('button'); b.textContent=label; if(main) b.className='main'; b.onclick=fn; return b; }
+function tpFor(pos,cnt,isFinal){ return Math.round(10+Math.max(0,9-pos)*2+(cnt?cnt.P*0.5:0)+RUN.cup*3+(isFinal?10+(pos<=3?(4-pos)*5:0):0)); }
+function valText(ev,x,dq){ if(x.val==null) return x.me&&dq?'DQ':(ev.eng==='field'?'記録なし':'DNF'); return fmtVal(ev,x.val); }
+
+function concludeRace(info){
+  if(RUN.ev.eng==='combo') return comboConclude(info);
+  const ev=RUN.ev, r=RUN.rounds[RUN.ri], isFinal=r===R_F;
+  const rk=info.rk, pos=rk.findIndex(x=>x.me)+1, me=rk[pos-1], mv=me.val;
+  const ok=mv!=null&&pos<=r.q;
+  const sv=evSave(ev.id), wasLocked=RUN.cup+1<TIERS.length&&!unlocked(ev,RUN.cup+1);
+  let newPb=false;
+  if(mv!=null&&info.legal&&better(ev,mv,sv.pb[RUN.cup])){ sv.pb[RUN.cup]=mv; newPb=true; }
+  if(isFinal&&mv!=null&&(sv.pos[RUN.cup]==null||pos<sv.pos[RUN.cup])) sv.pos[RUN.cup]=pos;
+  pushLog(ev,pos,mv,info.metrics);
+  const gainTP=tpFor(pos,info.cnt,isFinal); SAVE.tp+=gainTP; persist();
+  const opened=wasLocked&&unlocked(ev,RUN.cup+1);
+  const sp=(isFinal&&pos===1&&mv!=null)?sponsorCheck(RUN.cup):null;
+  $('rCup').textContent=TIERS[RUN.cup].name+' / '+roundLabel();
+  $('rPos').innerHTML=isFinal&&pos===1?'<em>優勝</em>':`${pos}<em style="font-size:.6em">${isFinal?'位':'着'}</em>`;
+  $('rTime').textContent=mv!=null?fmtVal(ev,mv):(info.dq?'失格':'記録なし');
+  const st=$('rStatus');
+  if(isFinal){ st.textContent=pos<=3&&mv!=null?['金メダル','銀メダル','銅メダル'][pos-1]+'獲得！':'メダルに届かず'; st.className='status '+(pos<=3&&mv!=null?'gold':'out'); }
+  else { st.textContent=ok?`${nextName()}進出！`:'ここで敗退'; st.className='status '+(ok?'ok':'out'); }
+  $('rBadges').innerHTML=`<span class="badge tp2">+${gainTP} TP</span>`+(newPb?'<span class="badge pb">自己ベスト</span>':'')+(info.legal?'':'<span class="badge ng">追い風参考</span>')+(sp?`<span class="badge sp">スポンサー契約！${sp.co}「${sp.item}」</span>`:'')+(opened?`<span class="badge un">${TIERS[RUN.cup+1].name} 解放</span>`:'');
+  $('rList').innerHTML=rk.map((x,i)=>{
+    const q=!isFinal&&i<r.q&&x.val!=null?'Q':'', cut=(!isFinal&&i===r.q-1)||(isFinal&&i===2);
+    return `<tr class="${x.me?'me':''}${cut?' cut':''}"><td class="ln">${i+1}</td><td class="nm"><span class="sw" style="background:${JERSEY[x.lane-1]}"></span>${x.name}</td><td class="t">${valText(ev,x,info.dq)}</td><td class="q">${q}</td></tr>`;
+  }).join('');
+  $('rMini').innerHTML=(info.mini||'')+(info.metrics?'<button id="rLog" class="ghostbtn">計測ログをコピー</button>':'');
+  if(info.metrics) $('rLog').onclick=()=>copyLog(ev);
+  const B=$('rBtns'); B.innerHTML='';
+  const goTiers=()=>{ S=null; go('scTiers'); };
+  if(!isFinal&&ok){ B.append(btn('大会一覧',goTiers), btn(nextName()+'へ',()=>{ RUN.ri++; prepareRound(); },true)); }
+  else if(!isFinal){ B.append(btn('大会一覧',goTiers), btn('予選から',()=>{ RUN.ri=0; prepareRound(); }), btn('この組で再挑戦',reIntro,true)); }
+  else {
+    const hasNext=RUN.cup+1<TIERS.length&&unlocked(ev,RUN.cup+1);
+    B.append(btn('大会一覧',goTiers), btn(ev.eng==='field'?'もう一度':'決勝をもう一度',reIntro,!hasNext));
+    if(hasNext) B.append(btn('次の大会へ',()=>openTier(RUN.cup+1),true));
+  }
+  $('result').hidden=false;
+  if(isFinal&&pos===1&&mv!=null){ fanfare(); spawnConfetti(); }
+  else if(ok||(isFinal&&pos<=3&&mv!=null)) beep(1320,.2,.04,'triangle');
+}
+
+// ---- 混成競技
+function comboConclude(info){
+  const ev=RUN.ev, c=RUN.combo, sub=c.sub, last=c.idx+1>=ev.list.length;
+  const vals=Array(LANES).fill(null), by=Array(LANES).fill(null);
+  info.rk.forEach(x=>{ vals[x.lane-1]=x.val; by[x.lane-1]=x; });
+  const pts=vals.map(v=>v==null?0:comboPoints(ev,sub.baseId,v));
+  pts.forEach((p,i)=>{ c.tot[i]+=p; c.parts[i].push(p); });
+  const sp=info.rk.findIndex(x=>x.me)+1, gainTP=tpFor(sp,info.cnt,false)+(last?0:0); SAVE.tp+=gainTP; c.tp+=gainTP;
+  const order=[...Array(LANES).keys()].sort((a,b)=>c.tot[b]-c.tot[a]||a-b), pos=order.indexOf(ME)+1;
+  let opened=false,newPb=false;
+  if(last){
+    const sv=evSave(ev.id), wasLocked=RUN.cup+1<TIERS.length&&!unlocked(ev,RUN.cup+1);
+    if(better(ev,c.tot[ME],sv.pb[RUN.cup])){ sv.pb[RUN.cup]=c.tot[ME]; newPb=true; }
+    if(sv.pos[RUN.cup]==null||pos<sv.pos[RUN.cup]) sv.pos[RUN.cup]=pos;
+    const bonus=10+(pos<=3?(4-pos)*5:0)+RUN.cup*3; SAVE.tp+=bonus; c.tp+=bonus;
+    opened=wasLocked&&unlocked(ev,RUN.cup+1);
+    if(pos===1) c.sp=sponsorCheck(RUN.cup);
+  }
+  pushLog(ev,sp,vals[ME],info.metrics,sub.baseId);
+  persist();
+  $('rCup').textContent=TIERS[RUN.cup].name+' / '+ev.name+(last?'　最終結果':`　${sub.comboName}の結果`);
+  $('rPos').innerHTML=last&&pos===1?'<em>優勝</em>':`${pos}<em style="font-size:.6em">位</em>`;
+  $('rTime').textContent=c.tot[ME]+'点';
+  const st=$('rStatus');
+  if(last){ st.textContent=pos<=3?['金メダル','銀メダル','銅メダル'][pos-1]+'獲得！':'メダルに届かず'; st.className='status '+(pos<=3?'gold':'out'); }
+  else { st.textContent=`${sub.comboName}　${valText(sub,by[ME],false)}　${pts[ME]}点`; st.className='status ok'; }
+  $('rBadges').innerHTML=`<span class="badge tp2">+${last?c.tp:gainTP} TP</span>`+(newPb?'<span class="badge pb">自己ベスト</span>':'')+(last&&c.sp?`<span class="badge sp">スポンサー契約！${c.sp.co}「${c.sp.item}」</span>`:'')+(opened?`<span class="badge un">${TIERS[RUN.cup+1].name} 解放</span>`:'');
+  $('rList').innerHTML=order.map((i,k)=>{
+    const x=by[i], cut=last&&k===2;
+    return `<tr class="${i===ME?'me':''}${cut?' cut':''}"><td class="ln">${k+1}</td><td class="nm"><span class="sw" style="background:${JERSEY[i]}"></span>${i===ME?'あなた':x.name}</td><td class="t">${valText(sub,x,false)}</td><td class="pts">${pts[i]}→${c.tot[i]}</td></tr>`;
+  }).join('');
+  let cm='';
+  if(last){ const my=c.parts[ME], n=my.length, mean=my.reduce((a,b)=>a+b,0)/n, sd=Math.sqrt(my.reduce((a,b)=>a+(b-mean)*(b-mean),0)/n);
+    let lo=0,hi=0; my.forEach((v,i)=>{ if(v<my[lo]) lo=i; if(v>my[hi]) hi=i; });
+    const nm=i=>subEvent(ev,i).comboName;
+    cm=`<div class="tryline"><span>最高<b class="best">${nm(hi)} ${my[hi]}点</b></span><span>最低<b class="f">${nm(lo)} ${my[lo]}点</b></span><span>ばらつき<b>σ${Math.round(sd)}点（平均${Math.round(mean)}）</b></span><span>安定感<b>${Math.round(my[lo]/mean*100)}%</b></span></div>`
+      +`<div class="tryline">${my.map((v,i)=>`<span>${nm(i)}<b>${v}</b></span>`).join('')}</div>`; }
+  $('rMini').innerHTML=cm+(info.mini||'')+(info.metrics?'<button id="rLog" class="ghostbtn">計測ログをコピー</button>':'');
+  if(info.metrics) $('rLog').onclick=()=>copyLog(ev);
+  const B=$('rBtns'); B.innerHTML='';
+  const goTiers=()=>{ S=null; go('scTiers'); };
+  if(!last) B.append(btn('途中でやめる',goTiers), btn(`次：${subEvent(ev,c.idx+1).comboName}`,()=>{ c.idx++; prepareRound(); },true));
+  else {
+    const hasNext=RUN.cup+1<TIERS.length&&unlocked(ev,RUN.cup+1);
+    B.append(btn('大会一覧',goTiers), btn('もう一度',()=>openTier(RUN.cup),!hasNext));
+    if(hasNext) B.append(btn('次の大会へ',()=>openTier(RUN.cup+1),true));
+  }
+  $('result').hidden=false;
+  if(last&&pos===1){ fanfare(); spawnConfetti(); } else if(last&&pos<=3) beep(1320,.2,.04,'triangle');
+}
+
+renderMenu(); requestAnimationFrame(loop);
+
+})();
+</script>
+</body>
+</html>
